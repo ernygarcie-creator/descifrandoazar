@@ -273,7 +273,7 @@ b,strong{font-weight:500;}
 
 <div class="topbar">
   <div class="logo" onclick="showView('home')" style="cursor:pointer">
-    <img src="img/logo.png" srcset="img/logo.png 1x, img/logo_2x.png 2x" alt="descifrandoazar.mx" style="height:42px;display:block">
+    <img src="img/logo.png" srcset="img/logo.png 1x, img/logo@2x.png 2x" alt="descifrandoazar.mx" style="height:42px;display:block">
   </div>
   <nav class="topnav">
     <button class="tnb active" onclick="showView('home')">Inicio</button>
@@ -734,12 +734,12 @@ function renderGuia3(el){
     <div class="card-hint">Con 1,000 combinaciones posibles, te ayudamos a reducir el universo con criterio.</div>`;
   const ol=mk('div','opt-list');
   const og=mk('div','opt');
-  og.innerHTML=`<div style="display:flex;align-items:center;gap:.6rem"><span style="font-size:1.1rem"><img src="img/icon-generador.png" srcset="img/icon-generador.png 1x, img/icon-generador_2x.png 2x" alt="" style="width:28px;height:28px;object-fit:contain;vertical-align:middle"></span>
+  og.innerHTML=`<div style="display:flex;align-items:center;gap:.6rem"><span style="font-size:1.1rem"><img src="img/icon-generador.png" srcset="img/icon-generador.png 1x, img/icon-generador@2x.png 2x" alt="" style="width:28px;height:28px;object-fit:contain;vertical-align:middle"></span>
     <div><div class="opt-t">Generar combinaciones guiadas</div>
     <div class="opt-s">Elige por suma y paridad para reducir el universo según tus preferencias</div></div></div>`;
   og.onclick=()=>showDir3Gen(el);
   const oa=mk('div','opt');
-  oa.innerHTML=`<div style="display:flex;align-items:center;gap:.6rem"><span style="font-size:1.1rem"><img src="img/icon-analizador.png" srcset="img/icon-analizador.png 1x, img/icon-analizador_2x.png 2x" alt="" style="width:28px;height:28px;object-fit:contain;vertical-align:middle"></span>
+  oa.innerHTML=`<div style="display:flex;align-items:center;gap:.6rem"><span style="font-size:1.1rem"><img src="img/icon-analizador.png" srcset="img/icon-analizador.png 1x, img/icon-analizador@2x.png 2x" alt="" style="width:28px;height:28px;object-fit:contain;vertical-align:middle"></span>
     <div><div class="opt-t">Analizar una combinación</div>
     <div class="opt-s">Ingresa una triple específica y descubre su historial y estructura estadística</div></div></div>`;
   oa.onclick=()=>goStep('st-ana');
@@ -963,11 +963,11 @@ function renderGuia4(el){
     <div class="card-hint">De <b>10,000 combinaciones posibles</b>, 9,614 han salido. Hay <b>386 que nunca han aparecido</b>.</div>`;
   const ol=mk('div','opt-list');
   const og=mk('div','opt');
-  og.innerHTML=`<div style="display:flex;align-items:center;gap:.6rem"><span style="font-size:1.1rem"><img src="img/icon-generador.png" srcset="img/icon-generador.png 1x, img/icon-generador_2x.png 2x" alt="" style="width:28px;height:28px;object-fit:contain;vertical-align:middle"></span>
+  og.innerHTML=`<div style="display:flex;align-items:center;gap:.6rem"><span style="font-size:1.1rem"><img src="img/icon-generador.png" srcset="img/icon-generador.png 1x, img/icon-generador@2x.png 2x" alt="" style="width:28px;height:28px;object-fit:contain;vertical-align:middle"></span>
     <div><div class="opt-t">Generar combinaciones guiadas</div><div class="opt-s">Elige por suma y paridad — incluye las que nunca han salido</div></div></div>`;
   og.onclick=()=>showDir4Gen(el);
   const oa=mk('div','opt');
-  oa.innerHTML=`<div style="display:flex;align-items:center;gap:.6rem"><span style="font-size:1.1rem"><img src="img/icon-analizador.png" srcset="img/icon-analizador.png 1x, img/icon-analizador_2x.png 2x" alt="" style="width:28px;height:28px;object-fit:contain;vertical-align:middle"></span>
+  oa.innerHTML=`<div style="display:flex;align-items:center;gap:.6rem"><span style="font-size:1.1rem"><img src="img/icon-analizador.png" srcset="img/icon-analizador.png 1x, img/icon-analizador@2x.png 2x" alt="" style="width:28px;height:28px;object-fit:contain;vertical-align:middle"></span>
     <div><div class="opt-t">Analizar una combinación</div><div class="opt-s">Ingresa 4 dígitos y ve su estructura y disección estadística</div></div></div>`;
   oa.onclick=()=>goStep('st-ana');
   ol.appendChild(og); ol.appendChild(oa); card.appendChild(ol); el.appendChild(card);
@@ -1155,11 +1155,11 @@ function renderGuia5(el){
     <div class="card-hint">Trabajamos <b>solo con combinaciones que nunca han salido</b>. De 100,000 posibles, ~78,000 no han aparecido en ${fmt(D.n)} sorteos. Con 1 peso puedes ganar proporcional al premio mayor.</div>`;
   const ol=mk('div','opt-list');
   const og=mk('div','opt');
-  og.innerHTML=`<div style="display:flex;align-items:center;gap:.6rem"><span style="font-size:1.1rem"><img src="img/icon-generador.png" srcset="img/icon-generador.png 1x, img/icon-generador_2x.png 2x" alt="" style="width:28px;height:28px;object-fit:contain;vertical-align:middle"></span>
+  og.innerHTML=`<div style="display:flex;align-items:center;gap:.6rem"><span style="font-size:1.1rem"><img src="img/icon-generador.png" srcset="img/icon-generador.png 1x, img/icon-generador@2x.png 2x" alt="" style="width:28px;height:28px;object-fit:contain;vertical-align:middle"></span>
     <div><div class="opt-t">Generar combinaciones guiadas</div><div class="opt-s">Elige por suma y paridad — solo combinaciones que nunca han salido</div></div></div>`;
   og.onclick=()=>showDir5Gen(el);
   const oa=mk('div','opt');
-  oa.innerHTML=`<div style="display:flex;align-items:center;gap:.6rem"><span style="font-size:1.1rem"><img src="img/icon-analizador.png" srcset="img/icon-analizador.png 1x, img/icon-analizador_2x.png 2x" alt="" style="width:28px;height:28px;object-fit:contain;vertical-align:middle"></span>
+  oa.innerHTML=`<div style="display:flex;align-items:center;gap:.6rem"><span style="font-size:1.1rem"><img src="img/icon-analizador.png" srcset="img/icon-analizador.png 1x, img/icon-analizador@2x.png 2x" alt="" style="width:28px;height:28px;object-fit:contain;vertical-align:middle"></span>
     <div><div class="opt-t">Analizar una combinación</div><div class="opt-s">Ingresa 5 dígitos y ve su estructura y disección estadística</div></div></div>`;
   oa.onclick=()=>goStep('st-ana');
   ol.appendChild(og); ol.appendChild(oa); card.appendChild(ol); el.appendChild(card);
@@ -2843,7 +2843,7 @@ function initGanaGato(el, data) {
       <div class="gg-step-sub">El universo tiene 390,625 tableros posibles.<br>Podemos ayudarte a explorarlos con inteligencia.</div>
       <div class="gg-opt-list">
         <div class="gg-opt" id="gg-btn-ana">
-          <span class="gg-opt-icon"><img src="img/icon-analizador.png" srcset="img/icon-analizador.png 1x, img/icon-analizador_2x.png 2x" alt="" style="width:28px;height:28px;object-fit:contain;vertical-align:middle"></span>
+          <span class="gg-opt-icon"><img src="img/icon-analizador.png" srcset="img/icon-analizador.png 1x, img/icon-analizador@2x.png 2x" alt="" style="width:28px;height:28px;object-fit:contain;vertical-align:middle"></span>
           <div class="gg-opt-body">
             <div class="gg-opt-name">Analizar una combinación</div>
             <div class="gg-opt-desc">Ingresa tus 8 números y descubre su estructura estadística completa.</div>
@@ -2851,7 +2851,7 @@ function initGanaGato(el, data) {
           <span class="gg-opt-arrow">›</span>
         </div>
         <div class="gg-opt" id="gg-btn-gen">
-          <span class="gg-opt-icon"><img src="img/icon-generador.png" srcset="img/icon-generador.png 1x, img/icon-generador_2x.png 2x" alt="" style="width:28px;height:28px;object-fit:contain;vertical-align:middle"></span>
+          <span class="gg-opt-icon"><img src="img/icon-generador.png" srcset="img/icon-generador.png 1x, img/icon-generador@2x.png 2x" alt="" style="width:28px;height:28px;object-fit:contain;vertical-align:middle"></span>
           <div class="gg-opt-body">
             <div class="gg-opt-name">Generar combinaciones guiadas</div>
             <div class="gg-opt-desc">Te guiamos paso a paso para reducir el universo según tus preferencias.</div>
@@ -3034,7 +3034,7 @@ function initGanaGato(el, data) {
           <div class="gg-last-sorteo-nums">${u.tablero.join(' · ')}</div>
           <div class="gg-last-sorteo-meta">Concurso #${u.concurso} · ${u.fecha} · Suma: ${u.suma}</div>
         </div>
-        <img src="img/icon-gato.png" srcset="img/icon-gato.png 1x, img/icon-gato_2x.png 2x" alt="comodín" style="width:34px;height:34px;object-fit:contain">
+        <img src="img/icon-gato.png" srcset="img/icon-gato.png 1x, img/icon-gato@2x.png 2x" alt="comodín" style="width:34px;height:34px;object-fit:contain">
       </div>`;
   }
 
@@ -3048,7 +3048,7 @@ function initGanaGato(el, data) {
       cell.className = 'gg-cell'; cell.id = `gg-cell-${gi}`;
       if (di===null) {
         cell.classList.add('gg-cell-joker');
-        cell.innerHTML = `<span class="gg-joker-icon"><img src="img/icon-gato.png" srcset="img/icon-gato.png 1x, img/icon-gato_2x.png 2x" alt="comodín" style="width:34px;height:34px;object-fit:contain"></span>`;
+        cell.innerHTML = `<span class="gg-joker-icon"><img src="img/icon-gato.png" srcset="img/icon-gato.png 1x, img/icon-gato@2x.png 2x" alt="comodín" style="width:34px;height:34px;object-fit:contain"></span>`;
       } else {
         const val = GG_STATE.boardVals[di];
         cell.innerHTML = `<span class="gg-cell-pos">C${di+1}</span><span class="gg-cell-num">${val!==null?val:'·'}</span>`;
@@ -3122,7 +3122,7 @@ function initGanaGato(el, data) {
       <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;width:216px;margin:0 auto">`;
     critLayout.forEach(g=>{
       if (g.di===null) {
-        boardH+=`<div style="width:66px;height:66px;border-radius:12px;background:linear-gradient(135deg,var(--cur),var(--cur-dark));display:flex;align-items:center;justify-content:center;font-size:26px">🐱</div>`;
+        boardH+=`<div style="width:66px;height:66px;border-radius:12px;background:linear-gradient(135deg,var(--cur),var(--cur-dark));display:flex;align-items:center;justify-content:center"><img src="img/icon-gato.png" srcset="img/icon-gato.png 1x, img/icon-gato@2x.png 2x" alt="" style="width:28px;height:28px;object-fit:contain"></div>`;
       } else {
         const bc=g.c==='gg-high'?'#f0a0a0':'#f0c060';
         boardH+=`<div style="width:66px;height:66px;border-radius:12px;border:2px solid ${bc};background:var(--surf,#fff);display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative">
@@ -3172,7 +3172,7 @@ function initGanaGato(el, data) {
       <p style="font-size:13px;color:var(--text-2);margin-bottom:12px">Recuerda que hay posiciones más críticas que otras en cualquier tablero. Las esquinas participan en 3 líneas; los bordes centrales, en 2.</p>
       <div class="gg-crit-grid">`;
     critLayout.forEach(g=>{
-      if (g.di===null) critH+=`<div class="gg-crit-cell gg-joker"><div class="gg-crit-num">🐱</div><div class="gg-crit-tag">comodín</div></div>`;
+      if (g.di===null) critH+=`<div class="gg-crit-cell gg-joker"><div class="gg-crit-num"><img src="img/icon-gato.png" srcset="img/icon-gato.png 1x, img/icon-gato@2x.png 2x" alt="" style="width:28px;height:28px;object-fit:contain"></div><div class="gg-crit-tag">comodín</div></div>`;
       else critH+=`<div class="gg-crit-cell ${g.c}"><div class="gg-crit-num">${vals[g.di]}</div><div class="gg-crit-tag">${g.c==='gg-high'?'3 líneas':'2 líneas'}</div></div>`;
     });
     critH+=`</div></div>`;
@@ -3622,7 +3622,7 @@ function initChispazo(el, data) {
         <div style="font-size:13px;color:var(--g700);margin-bottom:1.2rem">El universo tiene <strong>98,280</strong> combinaciones posibles.<br>Podemos ayudarte a explorarlas con inteligencia.</div>
         <div style="display:flex;flex-direction:column;gap:8px">
           <div class="chis-home-btn" onclick="chis_showAna()">
-            <span class="chis-home-icon"><img src="img/icon-analizador.png" srcset="img/icon-analizador.png 1x, img/icon-analizador_2x.png 2x" alt="" style="width:28px;height:28px;object-fit:contain;vertical-align:middle"></span>
+            <span class="chis-home-icon"><img src="img/icon-analizador.png" srcset="img/icon-analizador.png 1x, img/icon-analizador@2x.png 2x" alt="" style="width:28px;height:28px;object-fit:contain;vertical-align:middle"></span>
             <div>
               <div class="chis-home-title">Analizar una combinación</div>
               <div class="chis-home-sub">Ingresa tus 5 números y descubre su estructura estadística completa.</div>
@@ -3630,7 +3630,7 @@ function initChispazo(el, data) {
             <span class="chis-home-arr">›</span>
           </div>
           <div class="chis-home-btn" onclick="chis_showGen()">
-            <span class="chis-home-icon">🕐</span>
+            <span class="chis-home-icon"><img src="img/icon-generador.png" srcset="img/icon-generador.png 1x, img/icon-generador@2x.png 2x" alt="" style="width:28px;height:28px;object-fit:contain;vertical-align:middle"></span>
             <div>
               <div class="chis-home-title">Generar combinaciones guiadas</div>
               <div class="chis-home-sub">Te guiamos paso a paso para reducir el universo según tus preferencias.</div>
@@ -4435,7 +4435,7 @@ function initMelateRetro(el, data) {
         <div style="font-size:13px;color:var(--g700);margin-bottom:1.2rem">El universo tiene <strong>3,262,623</strong> combinaciones posibles.<br>Podemos ayudarte a explorarlas con inteligencia.</div>
         <div style="display:flex;flex-direction:column;gap:8px">
           <div class="melr-home-btn" onclick="melr_showAna()">
-            <span class="melr-home-icon"><img src="img/icon-analizador.png" srcset="img/icon-analizador.png 1x, img/icon-analizador_2x.png 2x" alt="" style="width:28px;height:28px;object-fit:contain;vertical-align:middle"></span>
+            <span class="melr-home-icon"><img src="img/icon-analizador.png" srcset="img/icon-analizador.png 1x, img/icon-analizador@2x.png 2x" alt="" style="width:28px;height:28px;object-fit:contain;vertical-align:middle"></span>
             <div>
               <div class="melr-home-title">Analizar una combinación</div>
               <div class="melr-home-sub">Ingresa tus 6 números y descubre su estructura estadística completa, incluyendo el R7.</div>
@@ -4443,7 +4443,7 @@ function initMelateRetro(el, data) {
             <span class="melr-home-arr">›</span>
           </div>
           <div class="melr-home-btn" onclick="melr_showGen()">
-            <span class="melr-home-icon">🕐</span>
+            <span class="melr-home-icon"><img src="img/icon-generador.png" srcset="img/icon-generador.png 1x, img/icon-generador@2x.png 2x" alt="" style="width:28px;height:28px;object-fit:contain;vertical-align:middle"></span>
             <div>
               <div class="melr-home-title">Generar combinaciones guiadas</div>
               <div class="melr-home-sub">Te guiamos paso a paso para reducir el universo según tus preferencias.</div>
@@ -5267,7 +5267,7 @@ el.innerHTML = `<header class="mel-hdr">
   <div class="mel-home-stats" id="mel-home-stats"></div>
   <div class="mel-home-tagline">El universo tiene <strong>32,468,436</strong> combinaciones posibles.<br>Podemos ayudarte a explorarlas con inteligencia.</div>
   <button class="mel-act-btn" onclick="mel_irA('ana')">
-    <div class="mel-act-icon"><img src="img/icon-analizador.png" srcset="img/icon-analizador.png 1x, img/icon-analizador_2x.png 2x" alt="" style="width:28px;height:28px;object-fit:contain;vertical-align:middle"></div>
+    <div class="mel-act-icon"><img src="img/icon-analizador.png" srcset="img/icon-analizador.png 1x, img/icon-analizador@2x.png 2x" alt="" style="width:28px;height:28px;object-fit:contain;vertical-align:middle"></div>
     <div class="mel-act-body">
       <div class="mel-act-title">Analizar una combinación</div>
       <div class="mel-act-desc">Ingresa tus 6 números y descubre su estructura estadística completa.</div>
@@ -5275,7 +5275,7 @@ el.innerHTML = `<header class="mel-hdr">
     <div class="mel-act-arrow">›</div>
   </button>
   <button class="mel-act-btn" onclick="mel_irA('gen')">
-    <div class="mel-act-icon"><img src="img/icon-generador.png" srcset="img/icon-generador.png 1x, img/icon-generador_2x.png 2x" alt="" style="width:28px;height:28px;object-fit:contain;vertical-align:middle"></div>
+    <div class="mel-act-icon"><img src="img/icon-generador.png" srcset="img/icon-generador.png 1x, img/icon-generador@2x.png 2x" alt="" style="width:28px;height:28px;object-fit:contain;vertical-align:middle"></div>
     <div class="mel-act-body">
       <div class="mel-act-title">Generar combinaciones guiadas</div>
       <div class="mel-act-desc">Te guiamos paso a paso para reducir el universo según tus preferencias.</div>
