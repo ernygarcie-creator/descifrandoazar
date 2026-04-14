@@ -718,6 +718,16 @@ function showSumaDetail(container,s){
 }
 
 function scrollToEl(el){if(el) setTimeout(()=>el.scrollIntoView({behavior:'smooth',block:'start'}),80);}
+function scrollToStepTop(target, delay=80){
+  setTimeout(()=>{
+    const el = typeof target === 'string' ? document.querySelector(target) : target;
+    if(!el) return;
+    const topbar = document.querySelector('.topbar');
+    const offset = (topbar ? topbar.offsetHeight : 0) + 12;
+    const top = window.pageYOffset + el.getBoundingClientRect().top - offset;
+    window.scrollTo({top:Math.max(0, top), behavior:'smooth'});
+  }, delay);
+}
 
 // ═══════════════════════════════════════════════════════
 // GUIA 3 — Directa 3: NEW DESIGN (generador guiado + analizador)
@@ -3970,9 +3980,7 @@ function initChispazo(el, data) {
     const sub = CHIS_GDAT.zonas[CHIS_STATE.zona].sub_zonas[i];
     chis_$('chis-a-info').innerHTML = `Sub-rango <strong>${sub.rango[0]}–${sub.rango[1]}</strong>: ${chis_fmtM(sub.total)} combinaciones posibles, ${sub.cnt_hist} sorteos históricos.`;
     chis_$('chis-a-info').style.display = 'block';
-    setTimeout(() => { chis_goStep('chis-gs-b'); chis_renderB(); }, 300);
-  
-  setTimeout(()=>{const t=document.querySelector("#chis-gs-b");if(t)t.scrollIntoView({behavior:"smooth",block:"start"});},420);
+    setTimeout(() => { chis_goStep('chis-gs-b'); chis_renderB(); scrollToStepTop('#chis-gs-b', 80); }, 300);
 }
 
   /* ── Generador: paso 2 (Forma) ──────────────────────────────────────────── */
@@ -4823,9 +4831,7 @@ function initMelateRetro(el, data) {
     const sub = MELR_GDAT.zonas[MELR_STATE.zona].sub_zonas[i];
     melr_$('melr-a-info').innerHTML = `Sub-rango <strong>${sub.rango[0]}–${sub.rango[1]}</strong>: ${melr_fmtM(sub.total)} combinaciones posibles, ${sub.cnt_hist} sorteos históricos.`;
     melr_$('melr-a-info').style.display = 'block';
-    setTimeout(() => { melr_goStep('melr-gs-b'); melr_renderB(); }, 300);
-  
-  setTimeout(()=>{const t=document.querySelector("#melr-gs-b");if(t)t.scrollIntoView({behavior:"smooth",block:"start"});},420);
+    setTimeout(() => { melr_goStep('melr-gs-b'); melr_renderB(); scrollToStepTop('#melr-gs-b', 80); }, 300);
 }
 
   /* ── Generador: paso 2 (Forma) ──────────────────────────────────────────── */
@@ -5658,9 +5664,7 @@ function mel_selSub(i,el){
   info.style.display='block';
   info.innerHTML=`Sub-rango <strong>${sub.rango[0]}–${sub.rango[1]}</strong>: ${mel_fmtM(sub.total)} combinaciones posibles.<br>
   Descartamos <strong>${mel_fmtM(mel_abs)}</strong> absurdas (todo en una banda, 4+ consecutivos, rango &lt;10, salto &gt;42). Quedan <strong>${mel_fmtM(sub.validas_est)}</strong>. Continuamos.`;
-  setTimeout(()=>{mel_goStep('mel-gs-b');mel_renderB();},700);
-
-  setTimeout(()=>{const t=document.querySelector("#mel-b-info");if(t)t.scrollIntoView({behavior:"smooth",block:"start"});},50);
+  setTimeout(()=>{mel_goStep('mel-gs-b');mel_renderB();scrollToStepTop('#mel-gs-b',80);},700);
 }
 
 // ── Paso B: forma ──
