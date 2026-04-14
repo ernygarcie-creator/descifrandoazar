@@ -86,7 +86,7 @@ b,strong{font-weight:500;}
 /* ══════ HOME ══════ */
 .hero{max-width:680px;margin:0 auto;padding:3rem 1.5rem 1.5rem;text-align:center;}
 .hero h1{font-size:1.85rem;font-weight:600;letter-spacing:-.03em;line-height:1.25;margin-bottom:.7rem;}
-.hero h1 span{color:#2563eb;}
+.hero h1 span{color:inherit;}
 .hero p{font-size:.93rem;color:var(--muted);line-height:1.8;max-width:520px;margin:0 auto 2rem;}
 .game-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:.7rem;
   max-width:640px;margin:0 auto 2.5rem;padding:0 1.5rem;}
@@ -276,7 +276,7 @@ b,strong{font-weight:500;}
     <img src="img/logo.png" srcset="img/logo.png 1x, img/logo@2x.png 2x" alt="descifrandoazar.mx" style="height:42px;display:block">
   </div>
   <nav class="topnav">
-    <button class="tnb active" onclick="showView('home')">Inicio</button>
+    <button class="tnb active" onclick="showView('home')">Todos los juegos</button>
     <button class="tnb" onclick="showView('nosotros')">Quiénes somos</button>
     <button class="tnb" onclick="showView('metodo')">Nuestro método</button>
   </nav>
@@ -285,9 +285,10 @@ b,strong{font-weight:500;}
 <!-- ══════════════ HOME ══════════════ -->
 <div class="view active" id="view-home">
   <div class="hero">
-    <h1>Lo posible es distinto<br><span>a lo probable</span></h1>
+    <h1><b style="color:#e87a1d">Lo posible</b> es distinto<br>a lo probable</h1>
     <p>Analizamos el comportamiento histórico de los sorteos para diseccionar el azar y mostrarte el mapa navegable de lo que aún no puedes visualizar. No pretendemos predecir combinaciones, te ayudamos a ver y entender su forma. Usa esta herramienta como apoyo para tu suerte.</p>
   </div>
+  <div style="text-align:center;margin:1.5rem 0 .75rem"><span style="font-size:1.75rem;font-weight:700;color:#e87a1d;letter-spacing:-.02em">Selecciona tu juego</span></div>
   <div class="game-grid">
     <div class="gc" style="--c:var(--tris)" onclick="showView('tris')">
       <div class="gc-name">TRIS</div>
@@ -443,7 +444,6 @@ b,strong{font-weight:500;}
 <!-- ══════════════ CHISPAZO ══════════════ -->
 <div class="view" id="view-chispazo">
   <div style="max-width:720px;margin:0 auto;padding:1rem;box-sizing:border-box">
-    <button class="back-opt" onclick="showView('home')">Inicio</button>
     <div id="chis-container"></div>
   </div>
 </div>
@@ -451,7 +451,6 @@ b,strong{font-weight:500;}
 <!-- ══════════════ GANA GATO ══════════════ -->
 <div class="view" id="view-gana-gato">
   <div style="max-width:640px;margin:0 auto;padding:1.2rem 1.2rem 4rem">
-    <button class="back-opt" onclick="showView('home')">Inicio</button>
     <div id="gg-container"></div>
   </div>
 </div>
@@ -2900,7 +2899,7 @@ function initGanaGato(el, data) {
       <div class="gg-universe-box">
         <div><div class="gg-universe-num" id="gg-s1-universe">0</div><div class="gg-universe-label">tableros en esta zona</div></div>
       </div>
-      <div class="gg-guia-desc">La suma de tus 8 casillas va del 8 al 40. El <b>84% del histórico</b> cae entre 19 y 29. <b>Escoge una zona</b> para comenzar:</div>
+      <div class="gg-guia-desc">La suma de tus 8 casillas va del 8 al 40. El <b>84% del histórico</b> cae entre 19 y 29. <b style="color:#9F7FCC">Escoge una zona para comenzar</b></div>
       <div class="gg-card" style="margin-bottom:18px">
         <div class="gg-card-title">Distribución histórica de sumas</div>
         <div id="gg-suma-chart"></div>
@@ -2920,6 +2919,7 @@ function initGanaGato(el, data) {
       <div class="gg-back-btn" id="gg-back-s2">‹ Suma</div>
       <div class="gg-step-label">Generador guiado · Paso 2 de 3</div>
       <div class="gg-step-title">Distribución de valores</div>
+      <div style="font-size:13px;font-weight:700;color:#9F7FCC;margin-bottom:8px">Escoge un patrón y luego da clic a Siguiente</div>
       <div class="gg-universe-box">
         <div><div class="gg-universe-num" id="gg-s2-universe">—</div><div class="gg-universe-label">tableros en tu rango de suma</div></div>
       </div>
@@ -3271,7 +3271,7 @@ function initGanaGato(el, data) {
         const isOpen=sub.classList.contains('gg-open');
         gg_qa('.gg-patron-sublista').forEach(s=>s.classList.remove('gg-open'));
         gg_qa('.gg-grupo-btn').forEach(b=>b.classList.remove('gg-open'));
-        if (!isOpen){ sub.classList.add('gg-open'); btn.classList.add('gg-open'); }
+        if (!isOpen){ sub.classList.add('gg-open'); btn.classList.add('gg-open'); setTimeout(()=>{sub.scrollIntoView({behavior:'smooth',block:'nearest'});},100); }
       };
       wrap.appendChild(sub);
       container.appendChild(wrap);
@@ -3296,6 +3296,7 @@ function initGanaGato(el, data) {
     const s3cnt = pk ? (data.patron_por_rango[GG_STATE.guia.rangoKey]?.[pk]||0) : (data.rango_counts[GG_STATE.guia.rangoKey]||0);
     gg_q('gg-s3-universe').textContent = s3cnt.toLocaleString('es-MX');
     gg_q('gg-s2-next').disabled=false;
+    setTimeout(()=>{const t=document.querySelector('#gg-s2-next');if(t)t.scrollIntoView({behavior:'smooth',block:'center'});},50);
   }
 
   // ── GENERADOR S3 ───────────────────────────────────────────────────────────
@@ -3958,7 +3959,9 @@ function initChispazo(el, data) {
     chis_$('chis-a-sub').innerHTML = sh;
     chis_$('chis-a-sub').style.display  = 'grid';
     chis_$('chis-a-info').style.display = 'none';
-  }
+  
+  setTimeout(()=>{const t=document.querySelector("#chis-a-sub");if(t)t.scrollIntoView({behavior:"smooth",block:"start"});},50);
+}
 
   function chis_selSub(i, optEl) {
     CHIS_STATE.subzona = i; CHIS_STATE.forma = CHIS_STATE.paridad = null;
@@ -3968,7 +3971,9 @@ function initChispazo(el, data) {
     chis_$('chis-a-info').innerHTML = `Sub-rango <strong>${sub.rango[0]}–${sub.rango[1]}</strong>: ${chis_fmtM(sub.total)} combinaciones posibles, ${sub.cnt_hist} sorteos históricos.`;
     chis_$('chis-a-info').style.display = 'block';
     setTimeout(() => { chis_goStep('chis-gs-b'); chis_renderB(); }, 300);
-  }
+  
+  setTimeout(()=>{const t=document.querySelector("#chis-b-info");if(t)t.scrollIntoView({behavior:"smooth",block:"start"});},50);
+}
 
   /* ── Generador: paso 2 (Forma) ──────────────────────────────────────────── */
   function chis_renderB() {
@@ -4002,7 +4007,9 @@ function initChispazo(el, data) {
     chis_$('chis-b-res').innerHTML = `Forma <strong>${f}</strong>: ${chis_fmtM(fi.cnt_universo)} combinaciones · ${fi.cnt_hist} sorteos históricos.`;
     chis_$('chis-b-res').style.display = 'block';
     setTimeout(() => { chis_goStep('chis-gs-c'); chis_renderC(); }, 300);
-  }
+  
+  setTimeout(()=>{const t=document.querySelector("#chis-c-opts");if(t)t.scrollIntoView({behavior:"smooth",block:"start"});},50);
+}
 
   /* ── Generador: paso 3 (Paridad) ───────────────────────────────────────── */
   function chis_renderC() {
@@ -4805,7 +4812,9 @@ function initMelateRetro(el, data) {
     melr_$('melr-a-sub').innerHTML = sh;
     melr_$('melr-a-sub').style.display  = 'grid';
     melr_$('melr-a-info').style.display = 'none';
-  }
+  
+  setTimeout(()=>{const t=document.querySelector("#melr-a-sub");if(t)t.scrollIntoView({behavior:"smooth",block:"start"});},50);
+}
 
   function melr_selSub(i, optEl) {
     MELR_STATE.subzona = i; MELR_STATE.forma = MELR_STATE.paridad = null;
@@ -4815,7 +4824,9 @@ function initMelateRetro(el, data) {
     melr_$('melr-a-info').innerHTML = `Sub-rango <strong>${sub.rango[0]}–${sub.rango[1]}</strong>: ${melr_fmtM(sub.total)} combinaciones posibles, ${sub.cnt_hist} sorteos históricos.`;
     melr_$('melr-a-info').style.display = 'block';
     setTimeout(() => { melr_goStep('melr-gs-b'); melr_renderB(); }, 300);
-  }
+  
+  setTimeout(()=>{const t=document.querySelector("#melr-b-info");if(t)t.scrollIntoView({behavior:"smooth",block:"start"});},50);
+}
 
   /* ── Generador: paso 2 (Forma) ──────────────────────────────────────────── */
   function melr_renderB() {
@@ -4849,7 +4860,9 @@ function initMelateRetro(el, data) {
     melr_$('melr-b-res').innerHTML = `Forma <strong>${f}</strong>: ${melr_fmtM(fi.cnt_universo)} combinaciones · ${fi.cnt_hist} sorteos históricos.`;
     melr_$('melr-b-res').style.display = 'block';
     setTimeout(() => { melr_goStep('melr-gs-c'); melr_renderC(); }, 300);
-  }
+  
+  setTimeout(()=>{const t=document.querySelector("#melr-c-opts");if(t)t.scrollIntoView({behavior:"smooth",block:"start"});},50);
+}
 
   /* ── Generador: paso 3 (Paridad) ───────────────────────────────────────── */
   function melr_renderC() {
@@ -5290,6 +5303,7 @@ el.innerHTML = `<header class="mel-hdr">
     <div class="mel-home-meta" id="mel-home-meta"></div>
   </div>
   <div class="mel-home-stats" id="mel-home-stats"></div>
+  <div style="font-size:1.25rem;font-weight:700;color:var(--g900);margin-bottom:.75rem">¿Qué quieres hacer?</div>
   <div class="mel-home-tagline">El universo tiene <strong>32,468,436</strong> combinaciones posibles.<br>Podemos ayudarte a explorarlas con inteligencia.</div>
   <button class="mel-act-btn" onclick="mel_irA('ana')">
     <div class="mel-act-icon"><img src="img/icon-analizador.png" srcset="img/icon-analizador.png 1x, img/icon-analizador@2x.png 2x" alt="" style="width:28px;height:28px;object-fit:contain;vertical-align:middle"></div>
@@ -5630,6 +5644,8 @@ function mel_selZona(k,el){
   document.getElementById('mel-a-sub').innerHTML=sh;
   document.getElementById('mel-a-sub').style.display='grid';
   document.getElementById('mel-a-info').style.display='none';
+
+  setTimeout(()=>{const t=document.querySelector("#mel-a-sub");if(t)t.scrollIntoView({behavior:"smooth",block:"start"});},50);
 }
 
 function mel_selSub(i,el){
@@ -5643,6 +5659,8 @@ function mel_selSub(i,el){
   info.innerHTML=`Sub-rango <strong>${sub.rango[0]}–${sub.rango[1]}</strong>: ${mel_fmtM(sub.total)} combinaciones posibles.<br>
   Descartamos <strong>${mel_fmtM(mel_abs)}</strong> absurdas (todo en una banda, 4+ consecutivos, rango &lt;10, salto &gt;42). Quedan <strong>${mel_fmtM(sub.validas_est)}</strong>. Continuamos.`;
   setTimeout(()=>{mel_goStep('mel-gs-b');mel_renderB();},700);
+
+  setTimeout(()=>{const t=document.querySelector("#mel-b-info");if(t)t.scrollIntoView({behavior:"smooth",block:"start"});},50);
 }
 
 // ── Paso B: forma ──
@@ -5678,6 +5696,8 @@ function mel_selForma(f,el){
   br.style.display='block';
   br.innerHTML=`Forma <strong>${f}</strong>: ${mel_fmtM(info.cnt_universo)} combinaciones en este sub-rango. Pasando a paridad…`;
   setTimeout(()=>{mel_goStep('mel-gs-c');mel_renderC();},700);
+
+  setTimeout(()=>{const t=document.querySelector("#mel-c-opts");if(t)t.scrollIntoView({behavior:"smooth",block:"start"});},50);
 }
 
 // ── Paso C: paridad ──
@@ -5880,7 +5900,7 @@ function mel_irA(seccion){
   document.querySelectorAll('.mel-pg').forEach(p=>p.classList.remove('mel-on'));
   document.getElementById('mel-pg-'+seccion).classList.add('mel-on');
   if(seccion==='ana'){mel_setC(MEL_STATE.cj);mel_renderStats();}
-  if(seccion==='gen'){mel_setC(MEL_STATE.cjg);}
+  if(seccion==='gen'){mel_setC(MEL_STATE.cjg);setTimeout(()=>{const t=document.querySelector('#mel-gs-a');if(t)t.scrollIntoView({behavior:'smooth',block:'start'});},50);}
 }
 
 // ── Render del home ──
