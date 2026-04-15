@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Panel Admin | Descifrando el Azar</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap');
+:root{
+  --bg:#f7f7f5;
+  --surf:#ffffff;
+  --surf2:#f2f2ef;
+  --border:rgba(0,0,0,.08);
+  --text:#1a1a18;
+  --muted:#6b6b66;
+  --muted2:#9e9e98;
+  --accent:#1d9e75;
+  --accent-dark:#085041;
+  --danger:#a32d2d;
+  --r:14px;
+  --rsm:10px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{
+  background:linear-gradient(180deg,#f8f8f6 0%,#f0f1eb 100%);
+  color:var(--text);
+  font-family:'Inter',system-ui,sans-serif;
+  min-height:100vh;
+}
+.wrap{max-width:1100px;margin:0 auto;padding:1.25rem 1.25rem 3rem}
+.topbar{
+  display:flex;align-items:center;justify-content:space-between;gap:1rem;
+  padding:1rem 0 1.4rem;
+}
+.brand{display:flex;align-items:center;gap:.6rem;text-decoration:none;color:inherit}
+.dot{width:10px;height:10px;border-radius:50%;background:var(--accent)}
+.brand h1{font-size:1.05rem;font-weight:600}
+.brand span{color:var(--muted2);font-weight:400}
+.link-btn,.btn{
+  border:none;border-radius:999px;padding:.72rem 1rem;cursor:pointer;
+  font:inherit;transition:.15s ease;display:inline-flex;align-items:center;justify-content:center;gap:.4rem;
+}
+.link-btn{background:var(--surf);border:1px solid var(--border);text-decoration:none;color:var(--text)}
+.link-btn:hover,.btn:hover{transform:translateY(-1px)}
+.hero{
+  display:grid;grid-template-columns:1.3fr .9fr;gap:1rem;margin-bottom:1rem;
+}
+.card{
+  background:rgba(255,255,255,.92);
+  border:1px solid var(--border);
+  border-radius:var(--r);
+  padding:1.15rem 1.2rem;
+  box-shadow:0 10px 30px rgba(0,0,0,.04);
+}
+.hero h2{font-size:1.7rem;line-height:1.15;margin-bottom:.65rem}
+.hero p,.meta li,.hint,.field-help,.status{color:var(--muted)}
+.meta{display:grid;gap:.55rem;list-style:none}
+.meta strong{color:var(--text)}
+.layout{display:grid;grid-template-columns:1.15fr .85fr;gap:1rem}
+.form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.9rem}
+.field{display:flex;flex-direction:column;gap:.38rem}
+.field.full{grid-column:1/-1}
+label{font-size:.82rem;font-weight:600}
+input,select,textarea{
+  width:100%;border:1px solid var(--border);border-radius:var(--rsm);
+  padding:.78rem .82rem;background:var(--surf);color:var(--text);font:inherit;
+}
+textarea{min-height:118px;resize:vertical}
+input:focus,select:focus,textarea:focus{outline:2px solid rgba(29,158,117,.18);border-color:var(--accent)}
+.field-help{font-size:.75rem;line-height:1.5}
+.section-title{font-size:.83rem;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--muted2);margin-bottom:.65rem}
+.group{
+  border:1px dashed rgba(0,0,0,.12);
+  border-radius:12px;
+  padding:.9rem;
+  background:var(--surf2);
+}
+.group + .group{margin-top:.85rem}
+.group h3{font-size:.95rem;margin-bottom:.65rem}
+.number-grid{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:.55rem}
+.number-grid.compact{grid-template-columns:repeat(5,minmax(0,1fr))}
+.actions{display:flex;flex-wrap:wrap;gap:.65rem;margin-top:1rem}
+.btn-primary{background:var(--accent);color:#fff}
+.btn-secondary{background:var(--surf);border:1px solid var(--border)}
+.btn-danger{background:#fff4f4;color:var(--danger);border:1px solid rgba(163,45,45,.15)}
+.preview{
+  background:#141714;color:#f5fff9;border-radius:14px;padding:1rem;
+  font-family:'JetBrains Mono',monospace;font-size:.77rem;line-height:1.7;
+  min-height:360px;white-space:pre-wrap;word-break:break-word;
+}
+.status{font-size:.8rem;margin-top:.7rem;min-height:1.2rem}
+.warn{
+  background:#fff9e8;border:1px solid rgba(133,100,4,.14);color:#6f5700;
+  border-radius:12px;padding:.8rem .9rem;font-size:.8rem;line-height:1.6;
+}
+.command{
+  margin-top:.8rem;padding:.8rem .9rem;border-radius:12px;background:var(--surf2);
+  font-family:'JetBrains Mono',monospace;font-size:.76rem;word-break:break-all;
+}
+@media (max-width:900px){
+  .hero,.layout{grid-template-columns:1fr}
+}
+@media (max-width:640px){
+  .form-grid{grid-template-columns:1fr}
+  .number-grid,.number-grid.compact{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .topbar{flex-direction:column;align-items:flex-start}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="topbar">
+    <a class="brand" href="./index.html">
+      <div class="dot"></div>
+      <h1>Descifrando el Azar <span>Admin</span></h1>
+    </a>
+    <a class="link-btn" href="./index.html">Volver al sitio</a>
+  </div>
+
+  <section class="hero">
+    <div class="card">
+      <h2>Base de captura para actualizar sorteos desde el celular</h2>
+      <p class="hint">Este panel no escribe todavía en GitHub por sí solo. Su función actual es capturar, validar y exportar payloads limpios que después correrán contra los scripts de actualización.</p>
+    </div>
+    <div class="card">
+      <div class="section-title">Estado de la base</div>
+      <ul class="meta">
+        <li><strong>Listo:</strong> captura de payload, borradores locales, copiar y descargar JSON.</li>
+        <li><strong>Listo:</strong> scripts base en <code>scripts/</code> para validar entradas.</li>
+        <li><strong>Pendiente:</strong> backend seguro para escribir al repo y recalcular métricas derivadas.</li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="layout">
+    <div class="card">
+      <div class="section-title">Formulario</div>
+      <div class="form-grid">
+        <div class="field">
+          <label for="game">Juego</label>
+          <select id="game">
+            <option value="tris">Tris</option>
+            <option value="chispazo">Chispazo</option>
+            <option value="melate-retro">Melate Retro</option>
+            <option value="melate">Melate</option>
+            <option value="gana-gato">Gana Gato</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="fecha">Fecha</label>
+          <input id="fecha" type="date">
+        </div>
+        <div class="field">
+          <label for="concurso">Concurso</label>
+          <input id="concurso" type="number" min="1" step="1" placeholder="Ej. 4194">
+        </div>
+        <div class="field">
+          <label for="fuente">Fuente</label>
+          <input id="fuente" type="text" placeholder="Pronósticos, captura manual, etc.">
+        </div>
+        <div class="field full">
+          <label for="notas">Notas</label>
+          <textarea id="notas" placeholder="Observaciones internas para el proceso de actualización"></textarea>
+        </div>
+      </div>
+
+      <div id="dynamic-sections" style="margin-top:1rem"></div>
+
+      <div class="actions">
+        <button class="btn btn-primary" id="build-btn" type="button">Generar payload</button>
+        <button class="btn btn-secondary" id="copy-btn" type="button">Copiar JSON</button>
+        <button class="btn btn-secondary" id="download-btn" type="button">Descargar JSON</button>
+        <button class="btn btn-secondary" id="save-btn" type="button">Guardar borrador</button>
+        <button class="btn btn-danger" id="clear-btn" type="button">Limpiar</button>
+      </div>
+      <div class="status" id="status"></div>
+    </div>
+
+    <div class="card">
+      <div class="section-title">Payload</div>
+      <div class="warn">Cuando conectemos backend, este mismo payload será el que viaje desde <code>admin.html</code> hacia una función segura para actualizar el repo o disparar GitHub Actions.</div>
+      <div class="command" id="command-preview">node scripts/calcular_tris.js --input ruta/al/archivo.json --write</div>
+      <pre class="preview" id="preview">{}</pre>
+    </div>
+  </section>
+</div>
+
+<script>
+const GAME_CONFIG = {
+  tris: {
+    kind: 'tris',
+    label: 'Tris',
+    script: 'scripts/calcular_tris.js'
+  },
+  chispazo: {
+    kind: 'numbers',
+    label: 'Chispazo',
+    count: 5,
+    min: 1,
+    max: 28,
+    script: 'scripts/calcular_chispazo.js'
+  },
+  'melate-retro': {
+    kind: 'numbers-plus',
+    label: 'Melate Retro',
+    count: 6,
+    min: 1,
+    max: 39,
+    extraLabel: 'Adicional (R7)',
+    extraMin: 1,
+    extraMax: 39,
+    script: 'scripts/calcular_melate_retro.js'
+  },
+  melate: {
+    kind: 'compound-melate',
+    label: 'Melate',
+    count: 6,
+    min: 1,
+    max: 56,
+    extraLabel: 'Adicional (R7 Melate)',
+    extraMin: 1,
+    extraMax: 56,
+    script: 'scripts/calcular_melate.js'
+  },
+  'gana-gato': {
+    kind: 'unsupported',
+    label: 'Gana Gato',
+    script: 'scripts/calcular_gana_gato.js'
+  }
+};
+
+const els = {
+  game: document.getElementById('game'),
+  fecha: document.getElementById('fecha'),
+  concurso: document.getElementById('concurso'),
+  fuente: document.getElementById('fuente'),
+  notas: document.getElementById('notas'),
+  dynamic: document.getElementById('dynamic-sections'),
+  preview: document.getElementById('preview'),
+  status: document.getElementById('status'),
+  command: document.getElementById('command-preview')
+};
+
+function pad2(n){ return String(n).padStart(2,'0'); }
+
+function setStatus(msg, isError = false){
+  els.status.textContent = msg;
+  els.status.style.color = isError ? 'var(--danger)' : 'var(--muted)';
+}
+
+function createNumberGroup(prefix, count, title, min, max, compact = false){
+  const wrapper = document.createElement('div');
+  wrapper.className = 'group';
+  wrapper.innerHTML = `<h3>${title}</h3>`;
+  const grid = document.createElement('div');
+  grid.className = `number-grid${compact ? ' compact' : ''}`;
+  for(let i=0;i<count;i+=1){
+    const input = document.createElement('input');
+    input.type = 'number';
+    input.min = String(min);
+    input.max = String(max);
+    input.step = '1';
+    input.placeholder = String(i + 1);
+    input.dataset.field = `${prefix}-${i}`;
+    grid.appendChild(input);
+  }
+  wrapper.appendChild(grid);
+  return wrapper;
+}
+
+function renderDynamicFields(){
+  const cfg = GAME_CONFIG[els.game.value];
+  els.dynamic.innerHTML = '';
+
+  if(cfg.kind === 'tris'){
+    const block = document.createElement('div');
+    block.className = 'group';
+    block.innerHTML = `
+      <h3>Resultado principal</h3>
+      <div class="field">
+        <label for="tris-resultado">Directa 5</label>
+        <input id="tris-resultado" type="text" inputmode="numeric" maxlength="5" placeholder="Ej. 20328">
+        <div class="field-help">Escribe el resultado completo de 5 dígitos. A partir de él se derivan num. inicial, num. final, par inicial, par final y directa 3/4/5.</div>
+      </div>`;
+    els.dynamic.appendChild(block);
+  }
+
+  if(cfg.kind === 'numbers'){
+    els.dynamic.appendChild(createNumberGroup('main', cfg.count, 'Combinación principal', cfg.min, cfg.max, cfg.count === 5));
+  }
+
+  if(cfg.kind === 'numbers-plus'){
+    els.dynamic.appendChild(createNumberGroup('main', cfg.count, 'Combinación principal', cfg.min, cfg.max));
+    const extra = document.createElement('div');
+    extra.className = 'group';
+    extra.innerHTML = `
+      <h3>${cfg.extraLabel}</h3>
+      <div class="field">
+        <input id="extra-value" type="number" min="${cfg.extraMin}" max="${cfg.extraMax}" step="1" placeholder="Número adicional">
+      </div>`;
+    els.dynamic.appendChild(extra);
+  }
+
+  if(cfg.kind === 'compound-melate'){
+    els.dynamic.appendChild(createNumberGroup('melate', cfg.count, 'Melate', cfg.min, cfg.max));
+    els.dynamic.appendChild(createNumberGroup('revancha', cfg.count, 'Revancha', cfg.min, cfg.max));
+    els.dynamic.appendChild(createNumberGroup('revanchita', cfg.count, 'Revanchita', cfg.min, cfg.max));
+    const extra = document.createElement('div');
+    extra.className = 'group';
+    extra.innerHTML = `
+      <h3>${cfg.extraLabel}</h3>
+      <div class="field">
+        <input id="extra-value" type="number" min="${cfg.extraMin}" max="${cfg.extraMax}" step="1" placeholder="Número adicional">
+        <div class="field-help">Este campo es opcional, pero conviene capturarlo si quieres conservar el dato del R7 en tu flujo de actualización.</div>
+      </div>`;
+    els.dynamic.appendChild(extra);
+  }
+
+  if(cfg.kind === 'unsupported'){
+    const block = document.createElement('div');
+    block.className = 'group';
+    block.innerHTML = `
+      <h3>Captura pendiente</h3>
+      <div class="field">
+        <label for="raw-json">JSON manual</label>
+        <textarea id="raw-json" placeholder='Pega aquí la estructura que quieras capturar para Gana Gato'></textarea>
+        <div class="field-help">Este juego quedó señalado como pendiente porque todavía no definimos su esquema de entrada operativo para recálculo.</div>
+      </div>`;
+    els.dynamic.appendChild(block);
+  }
+
+  updateCommandPreview();
+  loadDraft();
+}
+
+function readNumberGroup(prefix, count, formatter = n => n){
+  const values = [];
+  for(let i=0;i<count;i+=1){
+    const input = document.querySelector(`[data-field="${prefix}-${i}"]`);
+    const raw = input?.value?.trim();
+    if(!raw) throw new Error(`Falta completar ${prefix} #${i + 1}.`);
+    values.push(formatter(Number(raw)));
+  }
+  return values;
+}
+
+function normalizeSimpleNumbers(values, min, max){
+  const seen = new Set();
+  const out = values.map(v => {
+    if(!Number.isInteger(v) || v < min || v > max){
+      throw new Error(`Todos los números deben estar entre ${min} y ${max}.`);
+    }
+    if(seen.has(v)){
+      throw new Error('No se permiten números repetidos dentro del mismo bloque.');
+    }
+    seen.add(v);
+    return v;
+  });
+  return out.sort((a,b)=>a-b);
+}
+
+function buildPayload(){
+  const cfg = GAME_CONFIG[els.game.value];
+  if(!els.fecha.value) throw new Error('Selecciona una fecha.');
+  if(!els.concurso.value) throw new Error('Captura el concurso.');
+
+  const payload = {
+    version: 1,
+    created_at: new Date().toISOString(),
+    game: els.game.value,
+    source: 'admin.html',
+    draft_meta: {
+      fuente: els.fuente.value.trim() || null,
+      notas: els.notas.value.trim() || null
+    },
+    draw: {
+      fecha: els.fecha.value,
+      concurso: Number(els.concurso.value)
+    }
+  };
+
+  if(cfg.kind === 'tris'){
+    const raw = (document.getElementById('tris-resultado')?.value || '').replace(/\D/g,'');
+    if(raw.length !== 5) throw new Error('Tris requiere exactamente 5 dígitos.');
+    payload.draw.resultado = raw;
+  }
+
+  if(cfg.kind === 'numbers'){
+    const main = readNumberGroup('main', cfg.count);
+    payload.draw.numeros = normalizeSimpleNumbers(main, cfg.min, cfg.max);
+  }
+
+  if(cfg.kind === 'numbers-plus'){
+    const main = readNumberGroup('main', cfg.count);
+    payload.draw.numeros = normalizeSimpleNumbers(main, cfg.min, cfg.max);
+    const extra = document.getElementById('extra-value')?.value?.trim();
+    payload.draw.adicional = extra ? Number(extra) : null;
+  }
+
+  if(cfg.kind === 'compound-melate'){
+    payload.draw.melate = normalizeSimpleNumbers(readNumberGroup('melate', cfg.count), cfg.min, cfg.max);
+    payload.draw.revancha = normalizeSimpleNumbers(readNumberGroup('revancha', cfg.count), cfg.min, cfg.max);
+    payload.draw.revanchita = normalizeSimpleNumbers(readNumberGroup('revanchita', cfg.count), cfg.min, cfg.max);
+    const extra = document.getElementById('extra-value')?.value?.trim();
+    payload.draw.adicional = extra ? Number(extra) : null;
+  }
+
+  if(cfg.kind === 'unsupported'){
+    const raw = document.getElementById('raw-json')?.value?.trim();
+    if(!raw) throw new Error('Pega una estructura JSON para continuar.');
+    payload.draw.payload_manual = JSON.parse(raw);
+  }
+
+  return payload;
+}
+
+function updateCommandPreview(){
+  const cfg = GAME_CONFIG[els.game.value];
+  const fileName = `entrada-${els.game.value}.json`;
+  els.command.textContent = `node ${cfg.script} --input ${fileName} --write`;
+}
+
+function saveDraft(){
+  const key = `descifrando-admin-${els.game.value}`;
+  const inputs = {};
+  document.querySelectorAll('input, textarea, select').forEach(el => {
+    if(!el.id && !el.dataset.field) return;
+    inputs[el.id || el.dataset.field] = el.value;
+  });
+  localStorage.setItem(key, JSON.stringify(inputs));
+  setStatus('Borrador guardado en este dispositivo.');
+}
+
+function loadDraft(){
+  const key = `descifrando-admin-${els.game.value}`;
+  const raw = localStorage.getItem(key);
+  if(!raw) return;
+  try{
+    const data = JSON.parse(raw);
+    Object.entries(data).forEach(([k,v]) => {
+      const byId = document.getElementById(k);
+      const byData = document.querySelector(`[data-field="${k}"]`);
+      const target = byId || byData;
+      if(target) target.value = v;
+    });
+    setStatus('Se cargó el borrador local del juego actual.');
+  }catch(err){
+    console.error(err);
+  }
+}
+
+function clearForm(){
+  document.querySelectorAll('input, textarea').forEach(el => { el.value = ''; });
+  els.preview.textContent = '{}';
+  setStatus('Formulario limpio.');
+}
+
+async function copyPayload(){
+  try{
+    const payload = buildPayload();
+    const text = JSON.stringify(payload, null, 2);
+    await navigator.clipboard.writeText(text);
+    els.preview.textContent = text;
+    setStatus('Payload copiado al portapapeles.');
+  }catch(err){
+    setStatus(err.message, true);
+  }
+}
+
+function downloadPayload(){
+  try{
+    const payload = buildPayload();
+    const text = JSON.stringify(payload, null, 2);
+    els.preview.textContent = text;
+    const blob = new Blob([text], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    const suffix = `${payload.game}-${payload.draw.concurso || 'sin-concurso'}.json`;
+    a.href = url;
+    a.download = suffix;
+    a.click();
+    URL.revokeObjectURL(url);
+    setStatus('Payload descargado.');
+  }catch(err){
+    setStatus(err.message, true);
+  }
+}
+
+document.getElementById('build-btn').addEventListener('click', () => {
+  try{
+    const payload = buildPayload();
+    els.preview.textContent = JSON.stringify(payload, null, 2);
+    setStatus('Payload generado correctamente.');
+    updateCommandPreview();
+  }catch(err){
+    setStatus(err.message, true);
+  }
+});
+document.getElementById('copy-btn').addEventListener('click', copyPayload);
+document.getElementById('download-btn').addEventListener('click', downloadPayload);
+document.getElementById('save-btn').addEventListener('click', saveDraft);
+document.getElementById('clear-btn').addEventListener('click', clearForm);
+els.game.addEventListener('change', renderDynamicFields);
+els.concurso.addEventListener('input', updateCommandPreview);
+
+renderDynamicFields();
+</script>
+</body>
+</html>
