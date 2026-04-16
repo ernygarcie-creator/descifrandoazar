@@ -3,507 +3,874 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>Panel Admin | Descifrando el Azar</title>
+<title>Admin · descifrandoazar.mx</title>
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap');
 :root{
-  --bg:#f7f7f5;
-  --surf:#ffffff;
-  --surf2:#f2f2ef;
-  --border:rgba(0,0,0,.08);
-  --text:#1a1a18;
-  --muted:#6b6b66;
-  --muted2:#9e9e98;
-  --accent:#1d9e75;
-  --accent-dark:#085041;
-  --danger:#a32d2d;
-  --r:14px;
-  --rsm:10px;
+  --bg:#0f1117;--surf:#1a1d27;--surf2:#232636;--surf3:#2a2e40;
+  --border:#2e3247;--border2:#3d4260;
+  --text:#e8eaf0;--muted:#8890b0;--muted2:#555d80;
+  --accent:#4ade80;--accent-d:#16a34a;
+  --warn:#fbbf24;--err:#f87171;
+  --tris:#1D9E75;--mel:#C0272D;--mret:#993C1D;--chis:#BA7517;--gato:#9F7FCC;
+  --r:10px;--rsm:7px;
+  --font:'IBM Plex Sans',system-ui,sans-serif;
+  --mono:'IBM Plex Mono',monospace;
 }
 *{box-sizing:border-box;margin:0;padding:0}
-body{
-  background:linear-gradient(180deg,#f8f8f6 0%,#f0f1eb 100%);
-  color:var(--text);
-  font-family:'Inter',system-ui,sans-serif;
-  min-height:100vh;
-}
-.wrap{max-width:1100px;margin:0 auto;padding:1.25rem 1.25rem 3rem}
-.topbar{
-  display:flex;align-items:center;justify-content:space-between;gap:1rem;
-  padding:1rem 0 1.4rem;
-}
-.brand{display:flex;align-items:center;gap:.6rem;text-decoration:none;color:inherit}
-.dot{width:10px;height:10px;border-radius:50%;background:var(--accent)}
-.brand h1{font-size:1.05rem;font-weight:600}
-.brand span{color:var(--muted2);font-weight:400}
-.link-btn,.btn{
-  border:none;border-radius:999px;padding:.72rem 1rem;cursor:pointer;
-  font:inherit;transition:.15s ease;display:inline-flex;align-items:center;justify-content:center;gap:.4rem;
-}
-.link-btn{background:var(--surf);border:1px solid var(--border);text-decoration:none;color:var(--text)}
-.link-btn:hover,.btn:hover{transform:translateY(-1px)}
-.hero{
-  display:grid;grid-template-columns:1.3fr .9fr;gap:1rem;margin-bottom:1rem;
-}
-.card{
-  background:rgba(255,255,255,.92);
-  border:1px solid var(--border);
-  border-radius:var(--r);
-  padding:1.15rem 1.2rem;
-  box-shadow:0 10px 30px rgba(0,0,0,.04);
-}
-.hero h2{font-size:1.7rem;line-height:1.15;margin-bottom:.65rem}
-.hero p,.meta li,.hint,.field-help,.status{color:var(--muted)}
-.meta{display:grid;gap:.55rem;list-style:none}
-.meta strong{color:var(--text)}
-.layout{display:grid;grid-template-columns:1.15fr .85fr;gap:1rem}
-.form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.9rem}
-.field{display:flex;flex-direction:column;gap:.38rem}
-.field.full{grid-column:1/-1}
-label{font-size:.82rem;font-weight:600}
-input,select,textarea{
-  width:100%;border:1px solid var(--border);border-radius:var(--rsm);
-  padding:.78rem .82rem;background:var(--surf);color:var(--text);font:inherit;
-}
-textarea{min-height:118px;resize:vertical}
-input:focus,select:focus,textarea:focus{outline:2px solid rgba(29,158,117,.18);border-color:var(--accent)}
-.field-help{font-size:.75rem;line-height:1.5}
-.section-title{font-size:.83rem;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--muted2);margin-bottom:.65rem}
-.group{
-  border:1px dashed rgba(0,0,0,.12);
-  border-radius:12px;
-  padding:.9rem;
-  background:var(--surf2);
-}
-.group + .group{margin-top:.85rem}
-.group h3{font-size:.95rem;margin-bottom:.65rem}
-.number-grid{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:.55rem}
-.number-grid.compact{grid-template-columns:repeat(5,minmax(0,1fr))}
-.actions{display:flex;flex-wrap:wrap;gap:.65rem;margin-top:1rem}
-.btn-primary{background:var(--accent);color:#fff}
-.btn-secondary{background:var(--surf);border:1px solid var(--border)}
-.btn-danger{background:#fff4f4;color:var(--danger);border:1px solid rgba(163,45,45,.15)}
-.preview{
-  background:#141714;color:#f5fff9;border-radius:14px;padding:1rem;
-  font-family:'JetBrains Mono',monospace;font-size:.77rem;line-height:1.7;
-  min-height:360px;white-space:pre-wrap;word-break:break-word;
-}
-.status{font-size:.8rem;margin-top:.7rem;min-height:1.2rem}
-.warn{
-  background:#fff9e8;border:1px solid rgba(133,100,4,.14);color:#6f5700;
-  border-radius:12px;padding:.8rem .9rem;font-size:.8rem;line-height:1.6;
-}
-.command{
-  margin-top:.8rem;padding:.8rem .9rem;border-radius:12px;background:var(--surf2);
-  font-family:'JetBrains Mono',monospace;font-size:.76rem;word-break:break-all;
-}
-@media (max-width:900px){
-  .hero,.layout{grid-template-columns:1fr}
-}
-@media (max-width:640px){
-  .form-grid{grid-template-columns:1fr}
-  .number-grid,.number-grid.compact{grid-template-columns:repeat(3,minmax(0,1fr))}
-  .topbar{flex-direction:column;align-items:flex-start}
+body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:14px;line-height:1.6;min-height:100vh}
+a{color:var(--accent);text-decoration:none}
+
+/* Layout */
+.wrap{max-width:960px;margin:0 auto;padding:1.5rem 1rem 4rem}
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:1rem 0 1.5rem;border-bottom:1px solid var(--border);margin-bottom:1.5rem}
+.brand{display:flex;align-items:center;gap:.5rem}
+.brand-dot{width:8px;height:8px;border-radius:50%;background:var(--accent)}
+.brand-name{font-weight:600;font-size:1rem}
+.brand-sub{color:var(--muted);font-size:.75rem;margin-top:1px}
+.token-wrap{display:flex;gap:.5rem;align-items:center}
+
+/* Cards */
+.card{background:var(--surf);border:1px solid var(--border);border-radius:var(--r);padding:1.25rem;margin-bottom:1rem}
+.card-title{font-size:.65rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:.85rem}
+.section-title{font-size:1rem;font-weight:600;margin-bottom:.2rem}
+.section-sub{font-size:.8rem;color:var(--muted);margin-bottom:1rem}
+
+/* Game selector */
+.game-pills{display:flex;gap:.4rem;flex-wrap:wrap;margin-bottom:1.25rem}
+.game-pill{padding:.4rem .85rem;border-radius:999px;border:1.5px solid var(--border2);color:var(--muted);cursor:pointer;font-size:.78rem;font-family:var(--font);background:transparent;transition:all .15s}
+.game-pill:hover{border-color:var(--muted)}
+.game-pill.active{color:#fff;font-weight:500}
+.game-pill[data-game=tris].active{border-color:var(--tris);background:var(--tris)}
+.game-pill[data-game=melate].active{border-color:var(--mel);background:var(--mel)}
+.game-pill[data-game=melate-retro].active{border-color:var(--mret);background:var(--mret)}
+.game-pill[data-game=chispazo].active{border-color:var(--chis);background:var(--chis)}
+.game-pill[data-game=gana-gato].active{border-color:var(--gato);background:var(--gato)}
+
+/* Form */
+.field{margin-bottom:.85rem}
+.field label{display:block;font-size:.72rem;font-weight:500;color:var(--muted);margin-bottom:.3rem;letter-spacing:.03em}
+.field input{width:100%;background:var(--surf2);border:1px solid var(--border2);border-radius:var(--rsm);padding:.52rem .75rem;color:var(--text);font-family:var(--mono);font-size:.88rem;outline:none;transition:border-color .15s}
+.field input:focus{border-color:var(--accent)}
+.field input.err{border-color:var(--err)}
+.field-hint{font-size:.7rem;color:var(--muted2);margin-top:.25rem}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:.75rem}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:.6rem}
+.grid6{display:grid;grid-template-columns:repeat(6,1fr);gap:.5rem}
+.section-sep{height:1px;background:var(--border);margin:.85rem 0}
+.subsection{font-size:.7rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted2);margin-bottom:.55rem}
+
+/* Buttons */
+.btn{border:none;border-radius:var(--rsm);padding:.6rem 1.2rem;cursor:pointer;font-family:var(--font);font-size:.84rem;font-weight:500;transition:all .15s;display:inline-flex;align-items:center;gap:.4rem}
+.btn-primary{background:var(--accent);color:#0f1117}
+.btn-primary:hover{background:#22c55e}
+.btn-primary:disabled{background:var(--muted2);cursor:not-allowed;color:var(--bg)}
+.btn-ghost{background:var(--surf2);color:var(--text);border:1px solid var(--border2)}
+.btn-ghost:hover{border-color:var(--muted)}
+.btn-danger{background:transparent;color:var(--err);border:1px solid var(--err)}
+.btn-row{display:flex;gap:.5rem;flex-wrap:wrap;margin-top:1rem}
+
+/* Token input */
+.token-input{background:var(--surf2);border:1px solid var(--border2);border-radius:var(--rsm);padding:.42rem .7rem;color:var(--text);font-family:var(--mono);font-size:.78rem;outline:none;width:280px;transition:border-color .15s}
+.token-input:focus{border-color:var(--accent)}
+.token-status{font-size:.7rem;display:flex;align-items:center;gap:.3rem}
+.dot-ok{width:6px;height:6px;border-radius:50%;background:var(--accent);flex-shrink:0}
+.dot-warn{width:6px;height:6px;border-radius:50%;background:var(--warn);flex-shrink:0}
+
+/* Status log */
+.log{background:var(--surf2);border:1px solid var(--border);border-radius:var(--rsm);padding:.75rem 1rem;font-family:var(--mono);font-size:.75rem;max-height:200px;overflow-y:auto;line-height:1.8}
+.log-line{display:flex;gap:.5rem}
+.log-line.ok{color:var(--accent)}
+.log-line.err{color:var(--err)}
+.log-line.info{color:var(--muted)}
+.log-line.warn{color:var(--warn)}
+.log-ts{color:var(--muted2);flex-shrink:0}
+
+/* Progress */
+.progress-wrap{margin-top:.85rem;display:none}
+.progress-label{font-size:.72rem;color:var(--muted);margin-bottom:.3rem}
+.progress-bar{height:4px;background:var(--border);border-radius:2px;overflow:hidden}
+.progress-fill{height:100%;background:var(--accent);border-radius:2px;transition:width .3s;width:0%}
+
+/* Number badges */
+.num-badge{display:inline-flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:50%;background:var(--surf3);border:1.5px solid var(--border2);font-family:var(--mono);font-weight:600;font-size:.82rem;color:var(--text)}
+
+/* Confirmation modal */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);display:flex;align-items:center;justify-content:center;z-index:100;display:none}
+.modal-overlay.show{display:flex}
+.modal{background:var(--surf);border:1px solid var(--border2);border-radius:var(--r);padding:1.5rem;max-width:440px;width:90%}
+.modal-title{font-size:1rem;font-weight:600;margin-bottom:.5rem}
+.modal-body{color:var(--muted);font-size:.85rem;line-height:1.7;margin-bottom:1.25rem}
+.modal-combo{display:flex;gap:.35rem;flex-wrap:wrap;margin:.65rem 0;padding:.65rem;background:var(--surf2);border-radius:var(--rsm)}
+
+@media(max-width:520px){
+  .grid2,.grid3,.grid6{grid-template-columns:1fr 1fr}
+  .token-input{width:100%}
+  .token-wrap{flex-direction:column;align-items:flex-start}
 }
 </style>
 </head>
 <body>
+
 <div class="wrap">
   <div class="topbar">
-    <a class="brand" href="./index.html">
-      <div class="dot"></div>
-      <h1>Descifrando el Azar <span>Admin</span></h1>
-    </a>
-    <a class="link-btn" href="./index.html">Volver al sitio</a>
+    <div class="brand">
+      <div class="brand-dot"></div>
+      <div>
+        <div class="brand-name">descifrandoazar.mx <span style="color:var(--muted);font-weight:400">/ admin</span></div>
+        <div class="brand-sub">Panel de actualización de sorteos</div>
+      </div>
+    </div>
+    <div class="token-wrap">
+      <input type="password" class="token-input" id="gh-token" placeholder="ghp_tu_token_de_github" autocomplete="off">
+      <div class="token-status" id="token-status">
+        <div class="dot-warn"></div>
+        <span style="color:var(--warn)">Token requerido</span>
+      </div>
+    </div>
   </div>
 
-  <section class="hero">
-    <div class="card">
-      <h2>Base de captura para actualizar sorteos desde el celular</h2>
-      <p class="hint">Este panel no escribe todavía en GitHub por sí solo. Su función actual es capturar, validar y exportar payloads limpios que después correrán contra los scripts de actualización.</p>
+  <!-- GAME SELECTOR -->
+  <div class="card">
+    <div class="card-title">Selecciona el juego a actualizar</div>
+    <div class="game-pills">
+      <button class="game-pill active" data-game="tris">TRIS</button>
+      <button class="game-pill" data-game="melate">MELATE</button>
+      <button class="game-pill" data-game="melate-retro">MELATE RETRO</button>
+      <button class="game-pill" data-game="chispazo">CHISPAZO</button>
+      <button class="game-pill" data-game="gana-gato">GANA GATO</button>
     </div>
-    <div class="card">
-      <div class="section-title">Estado de la base</div>
-      <ul class="meta">
-        <li><strong>Listo:</strong> captura de payload, borradores locales, copiar y descargar JSON.</li>
-        <li><strong>Listo:</strong> scripts base en <code>scripts/</code> para validar entradas.</li>
-        <li><strong>Pendiente:</strong> backend seguro para escribir al repo y recalcular métricas derivadas.</li>
-      </ul>
-    </div>
-  </section>
+    <div id="game-info" style="font-size:.8rem;color:var(--muted)"></div>
+  </div>
 
-  <section class="layout">
-    <div class="card">
-      <div class="section-title">Formulario</div>
-      <div class="form-grid">
-        <div class="field">
-          <label for="game">Juego</label>
-          <select id="game">
-            <option value="tris">Tris</option>
-            <option value="chispazo">Chispazo</option>
-            <option value="melate-retro">Melate Retro</option>
-            <option value="melate">Melate</option>
-            <option value="gana-gato">Gana Gato</option>
-          </select>
-        </div>
-        <div class="field">
-          <label for="fecha">Fecha</label>
-          <input id="fecha" type="date">
-        </div>
-        <div class="field">
-          <label for="concurso">Concurso</label>
-          <input id="concurso" type="number" min="1" step="1" placeholder="Ej. 4194">
-        </div>
-        <div class="field">
-          <label for="fuente">Fuente</label>
-          <input id="fuente" type="text" placeholder="Pronósticos, captura manual, etc.">
-        </div>
-        <div class="field full">
-          <label for="notas">Notas</label>
-          <textarea id="notas" placeholder="Observaciones internas para el proceso de actualización"></textarea>
-        </div>
+  <!-- SORTEO FORM -->
+  <div class="card" id="form-card">
+    <div class="card-title" id="form-title">Nuevo resultado — TRIS</div>
+    <div class="grid2">
+      <div class="field">
+        <label>Fecha del sorteo</label>
+        <input type="date" id="f-fecha">
       </div>
-
-      <div id="dynamic-sections" style="margin-top:1rem"></div>
-
-      <div class="actions">
-        <button class="btn btn-primary" id="build-btn" type="button">Generar payload</button>
-        <button class="btn btn-secondary" id="copy-btn" type="button">Copiar JSON</button>
-        <button class="btn btn-secondary" id="download-btn" type="button">Descargar JSON</button>
-        <button class="btn btn-secondary" id="save-btn" type="button">Guardar borrador</button>
-        <button class="btn btn-danger" id="clear-btn" type="button">Limpiar</button>
+      <div class="field">
+        <label>Número de concurso</label>
+        <input type="number" id="f-concurso" placeholder="32793">
       </div>
-      <div class="status" id="status"></div>
     </div>
+    <div id="dynamic-fields"></div>
+    <div class="btn-row">
+      <button class="btn btn-primary" id="btn-update" disabled>
+        ↑ Actualizar y subir a GitHub
+      </button>
+      <button class="btn btn-ghost" id="btn-preview">Vista previa del cambio</button>
+    </div>
+  </div>
 
-    <div class="card">
-      <div class="section-title">Payload</div>
-      <div class="warn">Cuando conectemos backend, este mismo payload será el que viaje desde <code>admin.html</code> hacia una función segura para actualizar el repo o disparar GitHub Actions.</div>
-      <div class="command" id="command-preview">node scripts/calcular_tris.js --input ruta/al/archivo.json --write</div>
-      <pre class="preview" id="preview">{}</pre>
+  <!-- PROGRESS + LOG -->
+  <div class="card" id="log-card">
+    <div class="card-title">Registro de operaciones</div>
+    <div class="progress-wrap" id="progress-wrap">
+      <div class="progress-label" id="progress-label">Procesando...</div>
+      <div class="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
     </div>
-  </section>
+    <div class="log" id="log-box">
+      <div class="log-line info"><span class="log-ts">--:--:--</span><span>Panel listo. Ingresa tu token de GitHub para comenzar.</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- CONFIRMATION MODAL -->
+<div class="modal-overlay" id="modal">
+  <div class="modal">
+    <div class="modal-title" id="modal-title">Confirmar actualización</div>
+    <div class="modal-body" id="modal-body"></div>
+    <div class="btn-row">
+      <button class="btn btn-primary" id="modal-confirm">Confirmar y subir</button>
+      <button class="btn btn-ghost" id="modal-cancel">Cancelar</button>
+    </div>
+  </div>
 </div>
 
 <script>
-const GAME_CONFIG = {
-  tris: {
-    kind: 'tris',
-    label: 'Tris',
-    script: 'scripts/calcular_tris.js'
-  },
-  chispazo: {
-    kind: 'numbers',
-    label: 'Chispazo',
-    count: 5,
-    min: 1,
-    max: 28,
-    script: 'scripts/calcular_chispazo.js'
-  },
-  'melate-retro': {
-    kind: 'numbers-plus',
-    label: 'Melate Retro',
-    count: 6,
-    min: 1,
-    max: 39,
-    extraLabel: 'Adicional (R7)',
-    extraMin: 1,
-    extraMax: 39,
-    script: 'scripts/calcular_melate_retro.js'
-  },
-  melate: {
-    kind: 'compound-melate',
-    label: 'Melate',
-    count: 6,
-    min: 1,
-    max: 56,
-    extraLabel: 'Adicional (R7 Melate)',
-    extraMin: 1,
-    extraMax: 56,
-    script: 'scripts/calcular_melate.js'
-  },
-  'gana-gato': {
-    kind: 'unsupported',
-    label: 'Gana Gato',
-    script: 'scripts/calcular_gana_gato.js'
-  }
+// ═══════════════════════════════════════════════════════
+// CONFIG
+// ═══════════════════════════════════════════════════════
+const REPO_OWNER = 'ernygarcie-creator';
+const REPO_NAME  = 'descifrandoazar';
+const BRANCH     = 'main';
+
+const GAME_CFG = {
+  tris:         { label:'TRIS',         file:'data/tris.json',         color:'#1D9E75', kind:'tris' },
+  melate:       { label:'MELATE',       file:'data/melate.json',       color:'#C0272D', kind:'melate' },
+  'melate-retro':{ label:'MELATE RETRO',file:'data/melate_retro.json', color:'#993C1D', kind:'melate-retro' },
+  chispazo:     { label:'CHISPAZO',     file:'data/chispazo.json',     color:'#BA7517', kind:'chispazo' },
+  'gana-gato':  { label:'GANA GATO',   file:'data/gana_gato.json',    color:'#9F7FCC', kind:'gana-gato' },
 };
 
-const els = {
-  game: document.getElementById('game'),
-  fecha: document.getElementById('fecha'),
-  concurso: document.getElementById('concurso'),
-  fuente: document.getElementById('fuente'),
-  notas: document.getElementById('notas'),
-  dynamic: document.getElementById('dynamic-sections'),
-  preview: document.getElementById('preview'),
-  status: document.getElementById('status'),
-  command: document.getElementById('command-preview')
+// ═══════════════════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════════════════
+let currentGame = 'tris';
+let pendingPayload = null;
+
+// ═══════════════════════════════════════════════════════
+// DOM HELPERS
+// ═══════════════════════════════════════════════════════
+const $ = id => document.getElementById(id);
+const log = (msg, type='info') => {
+  const box = $('log-box');
+  const ts = new Date().toLocaleTimeString('es-MX');
+  const div = document.createElement('div');
+  div.className = `log-line ${type}`;
+  div.innerHTML = `<span class="log-ts">${ts}</span><span>${msg}</span>`;
+  box.appendChild(div);
+  box.scrollTop = box.scrollHeight;
 };
+const setProgress = (pct, label) => {
+  $('progress-wrap').style.display = 'block';
+  $('progress-fill').style.width = pct + '%';
+  $('progress-label').textContent = label;
+};
+const hideProgress = () => { $('progress-wrap').style.display = 'none'; };
 
-function pad2(n){ return String(n).padStart(2,'0'); }
+// ═══════════════════════════════════════════════════════
+// TOKEN
+// ═══════════════════════════════════════════════════════
+$('gh-token').addEventListener('input', () => {
+  const val = $('gh-token').value.trim();
+  const ok  = val.startsWith('ghp_') || val.startsWith('github_pat_');
+  $('token-status').innerHTML = ok
+    ? '<div class="dot-ok"></div><span style="color:var(--accent)">Token válido</span>'
+    : '<div class="dot-warn"></div><span style="color:var(--warn)">Token requerido</span>';
+  updateBtnState();
+});
 
-function setStatus(msg, isError = false){
-  els.status.textContent = msg;
-  els.status.style.color = isError ? 'var(--danger)' : 'var(--muted)';
+function getToken() { return $('gh-token').value.trim(); }
+function updateBtnState() {
+  const hasToken = getToken().length > 10;
+  const hasFecha = $('f-fecha').value;
+  const hasConcurso = $('f-concurso').value;
+  $('btn-update').disabled = !(hasToken && hasFecha && hasConcurso);
 }
+['f-fecha','f-concurso'].forEach(id => {
+  $(id)?.addEventListener('input', updateBtnState);
+});
 
-function createNumberGroup(prefix, count, title, min, max, compact = false){
-  const wrapper = document.createElement('div');
-  wrapper.className = 'group';
-  wrapper.innerHTML = `<h3>${title}</h3>`;
-  const grid = document.createElement('div');
-  grid.className = `number-grid${compact ? ' compact' : ''}`;
-  for(let i=0;i<count;i+=1){
-    const input = document.createElement('input');
-    input.type = 'number';
-    input.min = String(min);
-    input.max = String(max);
-    input.step = '1';
-    input.placeholder = String(i + 1);
-    input.dataset.field = `${prefix}-${i}`;
-    grid.appendChild(input);
-  }
-  wrapper.appendChild(grid);
-  return wrapper;
-}
-
-function renderDynamicFields(){
-  const cfg = GAME_CONFIG[els.game.value];
-  els.dynamic.innerHTML = '';
-
-  if(cfg.kind === 'tris'){
-    const block = document.createElement('div');
-    block.className = 'group';
-    block.innerHTML = `
-      <h3>Resultado principal</h3>
-      <div class="field">
-        <label for="tris-resultado">Directa 5</label>
-        <input id="tris-resultado" type="text" inputmode="numeric" maxlength="5" placeholder="Ej. 20328">
-        <div class="field-help">Escribe el resultado completo de 5 dígitos. A partir de él se derivan num. inicial, num. final, par inicial, par final y directa 3/4/5.</div>
-      </div>`;
-    els.dynamic.appendChild(block);
-  }
-
-  if(cfg.kind === 'numbers'){
-    els.dynamic.appendChild(createNumberGroup('main', cfg.count, 'Combinación principal', cfg.min, cfg.max, cfg.count === 5));
-  }
-
-  if(cfg.kind === 'numbers-plus'){
-    els.dynamic.appendChild(createNumberGroup('main', cfg.count, 'Combinación principal', cfg.min, cfg.max));
-    const extra = document.createElement('div');
-    extra.className = 'group';
-    extra.innerHTML = `
-      <h3>${cfg.extraLabel}</h3>
-      <div class="field">
-        <input id="extra-value" type="number" min="${cfg.extraMin}" max="${cfg.extraMax}" step="1" placeholder="Número adicional">
-      </div>`;
-    els.dynamic.appendChild(extra);
-  }
-
-  if(cfg.kind === 'compound-melate'){
-    els.dynamic.appendChild(createNumberGroup('melate', cfg.count, 'Melate', cfg.min, cfg.max));
-    els.dynamic.appendChild(createNumberGroup('revancha', cfg.count, 'Revancha', cfg.min, cfg.max));
-    els.dynamic.appendChild(createNumberGroup('revanchita', cfg.count, 'Revanchita', cfg.min, cfg.max));
-    const extra = document.createElement('div');
-    extra.className = 'group';
-    extra.innerHTML = `
-      <h3>${cfg.extraLabel}</h3>
-      <div class="field">
-        <input id="extra-value" type="number" min="${cfg.extraMin}" max="${cfg.extraMax}" step="1" placeholder="Número adicional">
-        <div class="field-help">Este campo es opcional, pero conviene capturarlo si quieres conservar el dato del R7 en tu flujo de actualización.</div>
-      </div>`;
-    els.dynamic.appendChild(extra);
-  }
-
-  if(cfg.kind === 'unsupported'){
-    const block = document.createElement('div');
-    block.className = 'group';
-    block.innerHTML = `
-      <h3>Captura pendiente</h3>
-      <div class="field">
-        <label for="raw-json">JSON manual</label>
-        <textarea id="raw-json" placeholder='Pega aquí la estructura que quieras capturar para Gana Gato'></textarea>
-        <div class="field-help">Este juego quedó señalado como pendiente porque todavía no definimos su esquema de entrada operativo para recálculo.</div>
-      </div>`;
-    els.dynamic.appendChild(block);
-  }
-
-  updateCommandPreview();
-  loadDraft();
-}
-
-function readNumberGroup(prefix, count, formatter = n => n){
-  const values = [];
-  for(let i=0;i<count;i+=1){
-    const input = document.querySelector(`[data-field="${prefix}-${i}"]`);
-    const raw = input?.value?.trim();
-    if(!raw) throw new Error(`Falta completar ${prefix} #${i + 1}.`);
-    values.push(formatter(Number(raw)));
-  }
-  return values;
-}
-
-function normalizeSimpleNumbers(values, min, max){
-  const seen = new Set();
-  const out = values.map(v => {
-    if(!Number.isInteger(v) || v < min || v > max){
-      throw new Error(`Todos los números deben estar entre ${min} y ${max}.`);
-    }
-    if(seen.has(v)){
-      throw new Error('No se permiten números repetidos dentro del mismo bloque.');
-    }
-    seen.add(v);
-    return v;
+// ═══════════════════════════════════════════════════════
+// GAME SELECTOR
+// ═══════════════════════════════════════════════════════
+document.querySelectorAll('.game-pill').forEach(pill => {
+  pill.addEventListener('click', () => {
+    document.querySelectorAll('.game-pill').forEach(p => p.classList.remove('active'));
+    pill.classList.add('active');
+    currentGame = pill.dataset.game;
+    renderForm();
   });
-  return out.sort((a,b)=>a-b);
+});
+
+const GAME_INFO = {
+  tris:          '5 sorteos diarios · ingresa los 5 dígitos del resultado',
+  melate:        'Semanal · 6 números 1-56 para Melate, Revancha y Revanchita + adicional',
+  'melate-retro':'Semanal · 6 números 1-39 + número adicional',
+  chispazo:      'Múltiples sorteos diarios · 5 números del 1-28',
+  'gana-gato':   'Semanal · 8 posiciones, cada una del 1-5',
+};
+
+function renderForm() {
+  const cfg = GAME_CFG[currentGame];
+  $('form-title').textContent = `Nuevo resultado — ${cfg.label}`;
+  $('game-info').textContent = GAME_INFO[currentGame] || '';
+  const df = $('dynamic-fields');
+  df.innerHTML = '';
+
+  if (currentGame === 'tris') {
+    df.innerHTML = `
+      <div class="field">
+        <label>Resultado (5 dígitos)</label>
+        <input type="text" id="f-tris" maxlength="5" placeholder="14697" style="font-size:1.4rem;letter-spacing:.2em;text-align:center">
+        <div class="field-hint">Solo los 5 dígitos, en orden tal como salió</div>
+      </div>`;
+
+  } else if (currentGame === 'melate') {
+    df.innerHTML = `
+      <div class="section-sep"></div>
+      <div class="subsection">Melate (6 números · 1–56)</div>
+      <div class="grid6">${[1,2,3,4,5,6].map(i=>`<div class="field"><label>N${i}</label><input type="number" id="mel-n${i}" min="1" max="56" placeholder="${i}"></div>`).join('')}</div>
+      <div class="section-sep"></div>
+      <div class="subsection">Revancha (6 números · 1–56)</div>
+      <div class="grid6">${[1,2,3,4,5,6].map(i=>`<div class="field"><label>N${i}</label><input type="number" id="rev-n${i}" min="1" max="56" placeholder="${i}"></div>`).join('')}</div>
+      <div class="section-sep"></div>
+      <div class="subsection">Revanchita (6 números · 1–56)</div>
+      <div class="grid6">${[1,2,3,4,5,6].map(i=>`<div class="field"><label>N${i}</label><input type="number" id="rva-n${i}" min="1" max="56" placeholder="${i}"></div>`).join('')}</div>
+      <div class="section-sep"></div>
+      <div class="subsection">Número adicional (Bolsa)</div>
+      <div style="max-width:120px"><div class="field"><label>Adicional · 1–56</label><input type="number" id="mel-adic" min="1" max="56" placeholder="42"></div></div>`;
+
+  } else if (currentGame === 'melate-retro') {
+    df.innerHTML = `
+      <div class="section-sep"></div>
+      <div class="subsection">6 números · 1–39</div>
+      <div class="grid6">${[1,2,3,4,5,6].map(i=>`<div class="field"><label>N${i}</label><input type="number" id="mret-n${i}" min="1" max="39" placeholder="${i}"></div>`).join('')}</div>
+      <div class="section-sep"></div>
+      <div class="subsection">Número adicional</div>
+      <div style="max-width:120px"><div class="field"><label>Adicional · 1–39</label><input type="number" id="mret-adic" min="1" max="39" placeholder="21"></div></div>`;
+
+  } else if (currentGame === 'chispazo') {
+    df.innerHTML = `
+      <div class="section-sep"></div>
+      <div class="subsection">5 números · 1–28</div>
+      <div class="grid6">${[1,2,3,4,5].map(i=>`<div class="field"><label>N${i}</label><input type="number" id="chis-n${i}" min="1" max="28" placeholder="${i}"></div>`).join('')}</div>`;
+
+  } else if (currentGame === 'gana-gato') {
+    df.innerHTML = `
+      <div class="section-sep"></div>
+      <div class="subsection">8 posiciones · cada una del 1–5 (de izquierda a derecha, fila por fila)</div>
+      <div class="grid6">${[1,2,3,4,5,6,7,8].map(i=>`<div class="field"><label>P${i}</label><input type="number" id="gg-p${i}" min="1" max="5" placeholder="${i<=5?i:i-4}"></div>`).join('')}</div>
+      <div class="field-hint">El centro (posición 5 en tablero 3×3) es el comodín — igual se captura</div>`;
+  }
+
+  // Re-bind input listeners
+  df.querySelectorAll('input').forEach(el => el.addEventListener('input', updateBtnState));
+  updateBtnState();
 }
 
-function buildPayload(){
-  const cfg = GAME_CONFIG[els.game.value];
-  if(!els.fecha.value) throw new Error('Selecciona una fecha.');
-  if(!els.concurso.value) throw new Error('Captura el concurso.');
+// ═══════════════════════════════════════════════════════
+// READ FORM VALUES
+// ═══════════════════════════════════════════════════════
+function readNums(prefix, count, min, max) {
+  const nums = [];
+  for (let i=1; i<=count; i++) {
+    const v = parseInt($(prefix+i)?.value);
+    if (isNaN(v) || v < min || v > max) throw new Error(`${prefix}${i}: valor fuera de rango (${min}-${max})`);
+    nums.push(v);
+  }
+  const uniq = new Set(nums);
+  if (uniq.size !== nums.length) throw new Error(`${prefix}: no se permiten números repetidos`);
+  return nums.slice().sort((a,b)=>a-b);
+}
 
-  const payload = {
-    version: 1,
-    created_at: new Date().toISOString(),
-    game: els.game.value,
-    source: 'admin.html',
-    draft_meta: {
-      fuente: els.fuente.value.trim() || null,
-      notas: els.notas.value.trim() || null
-    },
-    draw: {
-      fecha: els.fecha.value,
-      concurso: Number(els.concurso.value)
+function buildDraw() {
+  const fecha  = $('f-fecha').value;
+  const concurso = parseInt($('f-concurso').value);
+  if (!fecha) throw new Error('Ingresa la fecha del sorteo');
+  if (!concurso) throw new Error('Ingresa el número de concurso');
+
+  const draw = { fecha, concurso };
+
+  if (currentGame === 'tris') {
+    const r = ($('f-tris')?.value||'').replace(/\D/g,'');
+    if (r.length !== 5) throw new Error('El resultado debe tener exactamente 5 dígitos');
+    draw.resultado = r;
+  } else if (currentGame === 'melate') {
+    draw.melate      = readNums('mel-n', 6, 1, 56);
+    draw.revancha    = readNums('rev-n', 6, 1, 56);
+    draw.revanchita  = readNums('rva-n', 6, 1, 56);
+    const adic = parseInt($('mel-adic')?.value);
+    draw.adicional   = (adic >= 1 && adic <= 56) ? adic : null;
+  } else if (currentGame === 'melate-retro') {
+    draw.numeros     = readNums('mret-n', 6, 1, 39);
+    const adic = parseInt($('mret-adic')?.value);
+    draw.adicional   = (adic >= 1 && adic <= 39) ? adic : null;
+  } else if (currentGame === 'chispazo') {
+    draw.numeros     = readNums('chis-n', 5, 1, 28);
+  } else if (currentGame === 'gana-gato') {
+    draw.tablero     = [];
+    for (let i=1;i<=8;i++) {
+      const v = parseInt($(`gg-p${i}`)?.value);
+      if (isNaN(v)||v<1||v>5) throw new Error(`Posición ${i}: valor debe ser 1-5`);
+      draw.tablero.push(v);
     }
+  }
+  return draw;
+}
+
+// ═══════════════════════════════════════════════════════
+// RECALCULATE — THE CORE ENGINE
+// ═══════════════════════════════════════════════════════
+
+// ── Helpers ──────────────────────────────────────────
+function calcSuma(nums) { return nums.reduce((a,b)=>a+b,0); }
+
+function calcForma(nums, maxNum) {
+  // Divide in bands of ~10
+  const bandSize = maxNum <= 28 ? 7 : maxNum <= 39 ? 10 : 10;
+  const bands = {};
+  nums.forEach(n => {
+    const b = Math.floor((n-1)/bandSize);
+    bands[b] = (bands[b]||0)+1;
+  });
+  return Object.values(bands).sort((a,b)=>b-a).filter(v=>v>0).join('+');
+}
+
+function calcParidad(nums) {
+  const imp = nums.filter(n=>n%2!==0).length;
+  const par = nums.length - imp;
+  return `${imp}i-${par}p`;
+}
+
+function calcEtiqueta(forma, fent) {
+  return fent[forma] || 'balanceada';
+}
+
+function calcBandas(nums, maxNum) {
+  const bandSize = maxNum <= 28 ? 7 : 10;
+  const b = new Set(nums.map(n=>Math.floor((n-1)/bandSize)));
+  return b.size;
+}
+
+// ── TRIS recalculate ──────────────────────────────────
+function recalcTris(data, draw) {
+  const r = draw.resultado; // "14697"
+  const fecha = draw.fecha;
+  const d = JSON.parse(JSON.stringify(data)); // deep clone
+
+  // Update each modality
+  const mods = [
+    { key:'num_inicial', extract: r => r[0],    dig:1 },
+    { key:'num_final',   extract: r => r[4],    dig:1 },
+    { key:'par_inicial', extract: r => r.slice(0,2), dig:2 },
+    { key:'par_final',   extract: r => r.slice(3,5), dig:2 },
+    { key:'dir3',        extract: r => r.slice(2,5), dig:3 },
+    { key:'dir4',        extract: r => r.slice(1,5), dig:4 },
+    { key:'dir5',        extract: r => r,            dig:5 },
+  ];
+
+  mods.forEach(({ key, extract, dig }) => {
+    const m = d[key];
+    const combo = extract(r);
+    m.n += 1;
+    m.ultimo = combo;
+
+    // Update ultimos_10
+    m.ultimos_10 = [combo, ...(m.ultimos_10||[])].slice(0,10);
+    m.ultima_fecha = fecha;
+
+    if (dig <= 3) {
+      const pd = m.par_data;
+      // Update the specific combo's stats
+      if (pd[combo]) {
+        const entry = pd[combo];
+        const old_rezago = entry.rezago_real;
+        entry.veces_total += 1;
+        entry.rezago_real = 0;
+        entry.ultima_fecha = fecha;
+        entry.ult100 = (entry.ult100||0) + 1;
+        entry.ult200 = (entry.ult200||0) + 1;
+        entry.ult300 = (entry.ult300||0) + 1;
+        entry.ult500 = (entry.ult500||0) + 1;
+        entry.ult1000 = (entry.ult1000||0) + 1;
+        // Recalculate interval
+        if (old_rezago > 0) {
+          const intervals = [old_rezago]; // simplified
+          entry.intervalo_prom = Math.round((entry.intervalo_prom * (entry.veces_total-1) + old_rezago) / entry.veces_total * 10) / 10;
+          entry.intervalo_min = Math.min(entry.intervalo_min, old_rezago);
+          entry.intervalo_max = Math.max(entry.intervalo_max, old_rezago);
+        }
+      }
+      // Increment rezago for ALL OTHER combos
+      Object.keys(pd).forEach(k => {
+        if (k !== combo) {
+          pd[k].rezago_real += 1;
+          // Shift ult100/200/300 windows (decrement since 1 more sorteo passed)
+        }
+      });
+      // Rebuild top_retraso
+      const zona = Object.keys(pd).filter(k => pd[k].zona);
+      m.top_retraso = zona.sort((a,b)=>pd[b].rezago_real - pd[a].rezago_real).slice(0,30);
+
+    } else if (dig === 4) {
+      const idx = m.idx;
+      if (idx[combo]) {
+        const e = idx[combo];
+        e[1] += 1; // veces
+        e[2] = 0;  // rezago = 0
+        e[3] = fecha;
+      } else {
+        // First time this combo appears
+        const suma = combo.split('').reduce((a,c)=>a+parseInt(c),0);
+        m.idx[combo] = [suma, 1, 0, fecha];
+        // Remove from never_appeared if present
+        m.never_appeared = (m.never_appeared||[]).filter(c=>c!==combo);
+      }
+      // Increment rezago for all others
+      Object.keys(idx).forEach(k => { if(k!==combo) idx[k][2]++; });
+
+    } else if (dig === 5) {
+      const idx = m.idx;
+      if (idx[combo]) {
+        idx[combo][1] += 1;
+        idx[combo][2] = 0;
+        idx[combo][3] = fecha;
+      } else {
+        const suma = combo.split('').reduce((a,c)=>a+parseInt(c),0);
+        m.idx[combo] = [suma, 1, 0, fecha];
+      }
+      Object.keys(idx).forEach(k => { if(k!==combo) idx[k][2]++; });
+    }
+  });
+
+  return d;
+}
+
+// ── MELATE family recalculate ─────────────────────────
+function recalcMelateFamily(data, draw, game) {
+  const d = JSON.parse(JSON.stringify(data));
+  const fent = game === 'melate-retro' ? d.fent : d.formasEnt;
+  const maxNum = game === 'melate-retro' ? 39 : 56;
+
+  const sections = game === 'melate'
+    ? ['melate','revancha','revanchita']
+    : ['main'];
+
+  const getSection = (s) => {
+    if (game === 'melate') return d.historico[s];
+    return d.adat; // melate-retro
+  };
+  const getNumbers = (s) => {
+    if (game === 'melate') return draw[s];
+    return draw.numeros;
   };
 
-  if(cfg.kind === 'tris'){
-    const raw = (document.getElementById('tris-resultado')?.value || '').replace(/\D/g,'');
-    if(raw.length !== 5) throw new Error('Tris requiere exactamente 5 dígitos.');
-    payload.draw.resultado = raw;
-  }
+  const sectionKeys = game === 'melate' ? sections : ['main'];
 
-  if(cfg.kind === 'numbers'){
-    const main = readNumberGroup('main', cfg.count);
-    payload.draw.numeros = normalizeSimpleNumbers(main, cfg.min, cfg.max);
-  }
+  sectionKeys.forEach(s => {
+    const sec = getSection(s);
+    const nums = getNumbers(s);
+    const combo = nums.join('-').padStart ? nums.map(n=>String(n).padStart(2,'0')).join('-') : nums.join('-');
+    const suma  = calcSuma(nums);
+    const forma = calcForma(nums, maxNum);
+    const paridad = calcParidad(nums);
+    const etiqueta = fent ? (fent[forma]||'balanceada') : 'balanceada';
 
-  if(cfg.kind === 'numbers-plus'){
-    const main = readNumberGroup('main', cfg.count);
-    payload.draw.numeros = normalizeSimpleNumbers(main, cfg.min, cfg.max);
-    const extra = document.getElementById('extra-value')?.value?.trim();
-    payload.draw.adicional = extra ? Number(extra) : null;
-  }
+    const newEntry = {
+      combo: nums,
+      key: combo,
+      suma,
+      fecha: draw.fecha,
+      concurso: draw.concurso,
+      forma,
+      paridad,
+      etiqueta,
+    };
+    if (game === 'melate-retro') newEntry.r7 = draw.adicional;
+    if (game === 'melate') newEntry.r7 = draw.adicional;
 
-  if(cfg.kind === 'compound-melate'){
-    payload.draw.melate = normalizeSimpleNumbers(readNumberGroup('melate', cfg.count), cfg.min, cfg.max);
-    payload.draw.revancha = normalizeSimpleNumbers(readNumberGroup('revancha', cfg.count), cfg.min, cfg.max);
-    payload.draw.revanchita = normalizeSimpleNumbers(readNumberGroup('revanchita', cfg.count), cfg.min, cfg.max);
-    const extra = document.getElementById('extra-value')?.value?.trim();
-    payload.draw.adicional = extra ? Number(extra) : null;
-  }
+    // Prepend to historico
+    sec.historico = [newEntry, ...(sec.historico||[])].slice(0,200);
+    sec.historico_full = [newEntry, ...(sec.historico_full||[])];
 
-  if(cfg.kind === 'unsupported'){
-    const raw = document.getElementById('raw-json')?.value?.trim();
-    if(!raw) throw new Error('Pega una estructura JSON para continuar.');
-    payload.draw.payload_manual = JSON.parse(raw);
-  }
+    // Update index
+    if (!sec.historico_index) sec.historico_index = {};
+    sec.historico_index[combo] = (sec.historico_index[combo]||0) + 1;
 
-  return payload;
-}
+    // Update meta
+    if (!sec.meta) sec.meta = {};
+    sec.meta.n = (sec.meta.n||0) + 1;
 
-function updateCommandPreview(){
-  const cfg = GAME_CONFIG[els.game.value];
-  const fileName = `entrada-${els.game.value}.json`;
-  els.command.textContent = `node ${cfg.script} --input ${fileName} --write`;
-}
+    // Recalculate distributions from historico_full
+    const all = sec.historico_full;
+    const n = all.length;
 
-function saveDraft(){
-  const key = `descifrando-admin-${els.game.value}`;
-  const inputs = {};
-  document.querySelectorAll('input, textarea, select').forEach(el => {
-    if(!el.id && !el.dataset.field) return;
-    inputs[el.id || el.dataset.field] = el.value;
-  });
-  localStorage.setItem(key, JSON.stringify(inputs));
-  setStatus('Borrador guardado en este dispositivo.');
-}
-
-function loadDraft(){
-  const key = `descifrando-admin-${els.game.value}`;
-  const raw = localStorage.getItem(key);
-  if(!raw) return;
-  try{
-    const data = JSON.parse(raw);
-    Object.entries(data).forEach(([k,v]) => {
-      const byId = document.getElementById(k);
-      const byData = document.querySelector(`[data-field="${k}"]`);
-      const target = byId || byData;
-      if(target) target.value = v;
+    // forma_dist
+    const fd = {};
+    all.forEach(e => { fd[e.forma] = (fd[e.forma]||0)+1; });
+    sec.formas_dist = {};
+    Object.entries(fd).sort((a,b)=>b[1]-a[1]).forEach(([k,v])=>{
+      sec.formas_dist[k] = { cnt:v, pct:Math.round(v/n*10000)/100 };
     });
-    setStatus('Se cargó el borrador local del juego actual.');
-  }catch(err){
-    console.error(err);
+
+    // paridad_dist
+    const pd = {};
+    all.forEach(e => { pd[e.paridad] = (pd[e.paridad]||0)+1; });
+    sec.paridad_dist = {};
+    Object.entries(pd).sort((a,b)=>b[1]-a[1]).forEach(([k,v])=>{
+      sec.paridad_dist[k] = { cnt:v, pct:Math.round(v/n*10000)/100 };
+    });
+
+    // etiqueta/entropia_dist
+    const ed = {};
+    all.forEach(e => { ed[e.etiqueta] = (ed[e.etiqueta]||0)+1; });
+    sec.entropia_dist = {};
+    Object.entries(ed).sort((a,b)=>b[1]-a[1]).forEach(([k,v])=>{
+      sec.entropia_dist[k] = { cnt:v, pct:Math.round(v/n*10000)/100 };
+    });
+
+    // suma_zonas
+    if (sec.suma_zonas) {
+      const zones = sec.suma_zonas;
+      const total = all.length;
+      Object.keys(zones).forEach(zk => {
+        const z = zones[zk];
+        const cnt = all.filter(e=>e.suma>=z.rango[0]&&e.suma<=z.rango[1]).length;
+        z.cnt_hist = cnt;
+        z.pct_hist = Math.round(cnt/total*10000)/100;
+      });
+    }
+
+    // Update meta
+    const sumas = all.map(e=>e.suma).sort((a,b)=>a-b);
+    sec.meta.suma_media = Math.round(sumas.reduce((a,b)=>a+b,0)/sumas.length*100)/100;
+    // forma/paridad dominante
+    sec.meta.forma_dominante = Object.entries(fd).sort((a,b)=>b[1]-a[1])[0]?.[0];
+    sec.meta.paridad_dominante = Object.entries(pd).sort((a,b)=>b[1]-a[1])[0]?.[0];
+  });
+
+  return d;
+}
+
+// ── CHISPAZO recalculate ──────────────────────────────
+function recalcChispazo(data, draw) {
+  const d = JSON.parse(JSON.stringify(data));
+  const sec = d.adat;
+  const nums = draw.numeros;
+  const combo = nums.map(n=>String(n).padStart(2,'0')).join('-');
+  const suma  = calcSuma(nums);
+  const forma = calcForma(nums, 28);
+  const paridad = calcParidad(nums);
+  const etiqueta = d.fent?.[forma] || 'balanceada';
+
+  const newEntry = {
+    combo: nums, key: combo, suma,
+    fecha: draw.fecha, concurso: draw.concurso,
+    forma, paridad, etiqueta, absurda: false
+  };
+
+  sec.historico = [newEntry, ...sec.historico].slice(0,200);
+  sec.historico_full = [newEntry, ...sec.historico_full];
+  if (!sec.historico_index) sec.historico_index = {};
+  sec.historico_index[combo] = (sec.historico_index[combo]||0)+1;
+
+  const all = sec.historico_full;
+  const n = all.length;
+  sec.meta.n = n;
+
+  const fd={},pd={},ed={};
+  all.forEach(e=>{
+    fd[e.forma]=(fd[e.forma]||0)+1;
+    pd[e.paridad]=(pd[e.paridad]||0)+1;
+    ed[e.etiqueta]=(ed[e.etiqueta]||0)+1;
+  });
+  sec.formas_dist={};
+  Object.entries(fd).sort((a,b)=>b[1]-a[1]).forEach(([k,v])=>{sec.formas_dist[k]={cnt:v,pct:Math.round(v/n*10000)/100};});
+  sec.paridad_dist={};
+  Object.entries(pd).sort((a,b)=>b[1]-a[1]).forEach(([k,v])=>{sec.paridad_dist[k]={cnt:v,pct:Math.round(v/n*10000)/100};});
+  sec.entropia_dist={};
+  Object.entries(ed).sort((a,b)=>b[1]-a[1]).forEach(([k,v])=>{sec.entropia_dist[k]={cnt:v,pct:Math.round(v/n*10000)/100};});
+
+  if (sec.suma_zonas) {
+    Object.keys(sec.suma_zonas).forEach(zk=>{
+      const z=sec.suma_zonas[zk];
+      const cnt=all.filter(e=>e.suma>=z.rango[0]&&e.suma<=z.rango[1]).length;
+      z.cnt_hist=cnt; z.pct_hist=Math.round(cnt/n*10000)/100;
+    });
+  }
+  sec.meta.forma_dominante=Object.entries(fd).sort((a,b)=>b[1]-a[1])[0]?.[0];
+  sec.meta.paridad_dominante=Object.entries(pd).sort((a,b)=>b[1]-a[1])[0]?.[0];
+  return d;
+}
+
+// ── GANA GATO recalculate ─────────────────────────────
+function recalcGanaGato(data, draw) {
+  const d = JSON.parse(JSON.stringify(data));
+  const tablero = draw.tablero;
+  const suma = tablero.reduce((a,b)=>a+b,0);
+
+  d.n += 1;
+
+  // Add to ultimos (keep 3)
+  d.ultimos = [{
+    concurso: draw.concurso,
+    tablero,
+    suma,
+    fecha: draw.fecha
+  }, ...d.ultimos].slice(0,3);
+
+  // Add to historico (keep 20)
+  d.historico = [tablero, ...d.historico].slice(0,20);
+
+  // Update suma_dist
+  const sk = String(suma);
+  if (!d.suma_dist[sk]) d.suma_dist[sk] = {cnt:0,pct:0};
+  d.suma_dist[sk].cnt += 1;
+  // Recalculate pcts
+  const total = Object.values(d.suma_dist).reduce((a,v)=>a+v.cnt,0);
+  Object.values(d.suma_dist).forEach(v=>{ v.pct = Math.round(v.cnt/total*10000)/100; });
+
+  // Update suma_media and suma_moda
+  let weightedSum=0, maxCnt=0, moda=suma;
+  Object.entries(d.suma_dist).forEach(([s,v])=>{
+    weightedSum += parseInt(s)*v.cnt;
+    if(v.cnt>maxCnt){maxCnt=v.cnt;moda=parseInt(s);}
+  });
+  d.suma_media = Math.round(weightedSum/total*100)/100;
+  d.suma_moda = moda;
+
+  // Update patron_dist: compute patron from tablero
+  // Pattern = sorted descending counts of cells with same value
+  const valCounts = {};
+  tablero.forEach(v=>{valCounts[v]=(valCounts[v]||0)+1;});
+  const patron = Object.values(valCounts).sort((a,b)=>b-a).join('+');
+  if (!d.patron_dist[patron]) d.patron_dist[patron]={cnt:0,pct:0,vector:[]};
+  d.patron_dist[patron].cnt += 1;
+  const ptotal = Object.values(d.patron_dist).reduce((a,v)=>a+v.cnt,0);
+  Object.values(d.patron_dist).forEach(v=>{v.pct=Math.round(v.cnt/ptotal*10000)/100;});
+
+  return d;
+}
+
+// ── DISPATCHER ────────────────────────────────────────
+function recalculate(currentData, draw) {
+  switch(currentGame) {
+    case 'tris':         return recalcTris(currentData, draw);
+    case 'melate':       return recalcMelateFamily(currentData, draw, 'melate');
+    case 'melate-retro': return recalcMelateFamily(currentData, draw, 'melate-retro');
+    case 'chispazo':     return recalcChispazo(currentData, draw);
+    case 'gana-gato':    return recalcGanaGato(currentData, draw);
+    default: throw new Error('Juego no reconocido');
   }
 }
 
-function clearForm(){
-  document.querySelectorAll('input, textarea').forEach(el => { el.value = ''; });
-  els.preview.textContent = '{}';
-  setStatus('Formulario limpio.');
+// ═══════════════════════════════════════════════════════
+// GITHUB API
+// ═══════════════════════════════════════════════════════
+async function ghFetch(endpoint, opts={}) {
+  const res = await fetch(`https://api.github.com${endpoint}`, {
+    headers: {
+      'Authorization': `Bearer ${getToken()}`,
+      'Accept': 'application/vnd.github+json',
+      'X-GitHub-Api-Version': '2022-11-28',
+      ...opts.headers,
+    },
+    ...opts,
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(()=>({message:res.statusText}));
+    throw new Error(`GitHub API ${res.status}: ${err.message}`);
+  }
+  return res.json();
 }
 
-async function copyPayload(){
-  try{
-    const payload = buildPayload();
-    const text = JSON.stringify(payload, null, 2);
-    await navigator.clipboard.writeText(text);
-    els.preview.textContent = text;
-    setStatus('Payload copiado al portapapeles.');
-  }catch(err){
-    setStatus(err.message, true);
+async function getFileSha(path) {
+  const data = await ghFetch(`/repos/${REPO_OWNER}/${REPO_NAME}/contents/${path}?ref=${BRANCH}`);
+  return { sha: data.sha, content: atob(data.content.replace(/\n/g,'')) };
+}
+
+async function updateFile(path, content, sha, message) {
+  const encoded = btoa(unescape(encodeURIComponent(content)));
+  return ghFetch(`/repos/${REPO_OWNER}/${REPO_NAME}/contents/${path}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      message,
+      content: encoded,
+      sha,
+      branch: BRANCH,
+    }),
+  });
+}
+
+// ═══════════════════════════════════════════════════════
+// MAIN UPDATE FLOW
+// ═══════════════════════════════════════════════════════
+async function runUpdate(confirmedDraw) {
+  const cfg = GAME_CFG[currentGame];
+  $('btn-update').disabled = true;
+
+  try {
+    // 1. Fetch current JSON from GitHub
+    log(`Descargando ${cfg.file} desde GitHub...`, 'info');
+    setProgress(15, 'Descargando datos actuales...');
+    const { sha, content } = await getFileSha(cfg.file);
+    const currentData = JSON.parse(content);
+    log(`Datos actuales cargados (${(content.length/1024).toFixed(0)} KB)`, 'ok');
+
+    // 2. Recalculate
+    log('Recalculando estadísticas...', 'info');
+    setProgress(45, 'Recalculando estadísticas...');
+    const newData = recalculate(currentData, confirmedDraw);
+    const newContent = JSON.stringify(newData, null, 2);
+    log(`Recálculo completado. Nuevo tamaño: ${(newContent.length/1024).toFixed(0)} KB`, 'ok');
+
+    // 3. Upload to GitHub
+    log('Subiendo a GitHub...', 'info');
+    setProgress(75, 'Subiendo a GitHub...');
+    const commitMsg = `[admin] ${cfg.label} sorteo ${confirmedDraw.concurso} (${confirmedDraw.fecha})`;
+    await updateFile(cfg.file, newContent, sha, commitMsg);
+    log(`✓ ${cfg.file} actualizado en GitHub`, 'ok');
+    log(`Commit: ${commitMsg}`, 'ok');
+
+    setProgress(100, '¡Completado!');
+    log(`✓ GitHub Pages se actualizará en 1-2 minutos`, 'ok');
+
+    setTimeout(hideProgress, 3000);
+
+  } catch(err) {
+    log(`ERROR: ${err.message}`, 'err');
+    hideProgress();
+  } finally {
+    updateBtnState();
   }
 }
 
-function downloadPayload(){
-  try{
-    const payload = buildPayload();
-    const text = JSON.stringify(payload, null, 2);
-    els.preview.textContent = text;
-    const blob = new Blob([text], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    const suffix = `${payload.game}-${payload.draw.concurso || 'sin-concurso'}.json`;
-    a.href = url;
-    a.download = suffix;
-    a.click();
-    URL.revokeObjectURL(url);
-    setStatus('Payload descargado.');
-  }catch(err){
-    setStatus(err.message, true);
-  }
-}
+// ═══════════════════════════════════════════════════════
+// BUTTON HANDLERS
+// ═══════════════════════════════════════════════════════
+$('btn-update').addEventListener('click', () => {
+  try {
+    const draw = buildDraw();
+    pendingPayload = draw;
 
-document.getElementById('build-btn').addEventListener('click', () => {
-  try{
-    const payload = buildPayload();
-    els.preview.textContent = JSON.stringify(payload, null, 2);
-    setStatus('Payload generado correctamente.');
-    updateCommandPreview();
-  }catch(err){
-    setStatus(err.message, true);
+    // Build confirmation message
+    let bodyHtml = `<div style="margin-bottom:.5rem">Vas a registrar el siguiente resultado:</div>`;
+    bodyHtml += `<div class="modal-combo">`;
+    if (currentGame === 'tris') {
+      bodyHtml += `<span style="font-family:var(--mono);font-size:1.4rem;letter-spacing:.15em;color:var(--accent)">${draw.resultado}</span>`;
+    } else if (currentGame === 'melate') {
+      ['melate','revancha','revanchita'].forEach(s=>{
+        bodyHtml += `<div style="margin-bottom:.35rem;width:100%"><span style="font-size:.65rem;color:var(--muted);text-transform:uppercase">${s}</span><br>`;
+        draw[s].forEach(n=>{ bodyHtml += `<span class="num-badge">${n}</span> `; });
+        bodyHtml += `</div>`;
+      });
+    } else if (currentGame === 'gana-gato') {
+      draw.tablero.forEach((v,i)=>{ bodyHtml += `<span class="num-badge">${v}</span>`; if(i===3) bodyHtml+='<div style="width:100%"></div>'; });
+    } else {
+      (draw.numeros||[]).forEach(n=>{ bodyHtml += `<span class="num-badge">${n}</span> `; });
+    }
+    bodyHtml += `</div>`;
+    bodyHtml += `<div style="font-size:.78rem">Fecha: <strong>${draw.fecha}</strong> · Concurso: <strong>${draw.concurso}</strong></div>`;
+
+    $('modal-title').textContent = `Confirmar — ${GAME_CFG[currentGame].label}`;
+    $('modal-body').innerHTML = bodyHtml;
+    $('modal').classList.add('show');
+  } catch(err) {
+    log(`Error en formulario: ${err.message}`, 'err');
   }
 });
-document.getElementById('copy-btn').addEventListener('click', copyPayload);
-document.getElementById('download-btn').addEventListener('click', downloadPayload);
-document.getElementById('save-btn').addEventListener('click', saveDraft);
-document.getElementById('clear-btn').addEventListener('click', clearForm);
-els.game.addEventListener('change', renderDynamicFields);
-els.concurso.addEventListener('input', updateCommandPreview);
 
-renderDynamicFields();
+$('modal-confirm').addEventListener('click', () => {
+  $('modal').classList.remove('show');
+  runUpdate(pendingPayload);
+});
+
+$('modal-cancel').addEventListener('click', () => {
+  $('modal').classList.remove('show');
+  pendingPayload = null;
+});
+
+$('btn-preview').addEventListener('click', () => {
+  try {
+    const draw = buildDraw();
+    log(`Preview: ${JSON.stringify(draw)}`, 'info');
+  } catch(err) {
+    log(`Error: ${err.message}`, 'err');
+  }
+});
+
+// ═══════════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════════
+renderForm();
+// Set today's date as default
+$('f-fecha').value = new Date().toISOString().split('T')[0];
 </script>
 </body>
 </html>
