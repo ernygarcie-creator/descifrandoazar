@@ -733,14 +733,15 @@ function recalculate(currentData, draw) {
 // GITHUB API
 // ═══════════════════════════════════════════════════════
 async function ghFetch(endpoint, opts={}) {
+  const { headers: extraHeaders = {}, ...restOpts } = opts;
   const res = await fetch(`https://api.github.com${endpoint}`, {
     headers: {
       'Authorization': `Bearer ${getToken()}`,
       'Accept': 'application/vnd.github+json',
       'X-GitHub-Api-Version': '2022-11-28',
-      ...opts.headers,
+      ...extraHeaders,
     },
-    ...opts,
+    ...restOpts,
   });
   if (!res.ok) {
     const err = await res.json().catch(()=>({message:res.statusText}));
