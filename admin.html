@@ -554,9 +554,19 @@ function recalcMelateFamily(data, draw, game) {
     if (game === 'melate-retro') newEntry.r7 = draw.adicional;
     if (game === 'melate') newEntry.r7 = draw.adicional;
 
-    // Prepend to historico
+    // Prepend to historico (last 200, full objects — para UI de últimos sorteos)
     sec.historico = [newEntry, ...(sec.historico||[])].slice(0,200);
-    sec.historico_full = [newEntry, ...(sec.historico_full||[])];
+
+    // Prepend to historico_full (arrays de números PUROS — así lo espera index.html)
+    // También normalizamos entradas corruptas previas (objetos → arrays)
+    const prevFull = (sec.historico_full||[]).map(e => Array.isArray(e) ? e : (e.combo||[]));
+    sec.historico_full = [nums, ...prevFull];
+
+    // Actualizar historico_r7 (array paralelo de adicionales)
+    const needsR7 = (game === 'melate' && s === 'melate') || game === 'melate-retro';
+    if (needsR7) {
+      sec.historico_r7 = [draw.adicional != null ? draw.adicional : null, ...(sec.historico_r7||[])];
+    }
 
     // Update index
     if (!sec.historico_index) sec.historico_index = {};
@@ -600,6 +610,7 @@ function recalcMelateFamily(data, draw, game) {
       const total = all.length;
       Object.keys(zones).forEach(zk => {
         const z = zones[zk];
+        if (!z || !z.rango) return;
         const cnt = all.filter(e=>e.suma>=z.rango[0]&&e.suma<=z.rango[1]).length;
         z.cnt_hist = cnt;
         z.pct_hist = Math.round(cnt/total*10000)/100;
@@ -635,7 +646,9 @@ function recalcChispazo(data, draw) {
   };
 
   sec.historico = [newEntry, ...sec.historico].slice(0,200);
-  sec.historico_full = [newEntry, ...sec.historico_full];
+  // historico_full: arrays de números puros (así lo espera index.html)
+  const prevChisFull = (sec.historico_full||[]).map(e => Array.isArray(e) ? e : (e.combo||[]));
+  sec.historico_full = [nums, ...prevChisFull];
   if (!sec.historico_index) sec.historico_index = {};
   sec.historico_index[combo] = (sec.historico_index[combo]||0)+1;
 
@@ -659,6 +672,7 @@ function recalcChispazo(data, draw) {
   if (sec.suma_zonas) {
     Object.keys(sec.suma_zonas).forEach(zk=>{
       const z=sec.suma_zonas[zk];
+      if (!z || !z.rango) return;
       const cnt=all.filter(e=>e.suma>=z.rango[0]&&e.suma<=z.rango[1]).length;
       z.cnt_hist=cnt; z.pct_hist=Math.round(cnt/n*10000)/100;
     });
@@ -752,7 +766,18 @@ async function ghFetch(endpoint, opts={}) {
 
 async function getFileSha(path) {
   const data = await ghFetch(`/repos/${REPO_OWNER}/${REPO_NAME}/contents/${path}?ref=${BRANCH}`);
-  return { sha: data.sha, content: atob(data.content.replace(/\n/g,'')) };
+  let content;
+  if (data.content && data.content.trim()) {
+    // Archivo ≤ 1 MB: contenido incluido en la respuesta
+    content = atob(data.content.replace(/\n/g,''));
+  } else {
+    // Archivo > 1 MB: descargar desde download_url
+    log('Archivo grande (>1 MB), descargando contenido directo...', 'info');
+    const res = await fetch(data.download_url);
+    if (!res.ok) throw new Error(`Error descargando archivo: ${res.status}`);
+    content = await res.text();
+  }
+  return { sha: data.sha, content };
 }
 
 async function updateFile(path, content, sha, message) {
@@ -788,7 +813,7 @@ async function runUpdate(confirmedDraw) {
     log('Recalculando estadísticas...', 'info');
     setProgress(45, 'Recalculando estadísticas...');
     const newData = recalculate(currentData, confirmedDraw);
-    const newContent = JSON.stringify(newData, null, 2);
+    const newContent = JSON.stringify(newData);
     log(`Recálculo completado. Nuevo tamaño: ${(newContent.length/1024).toFixed(0)} KB`, 'ok');
 
     // 3. Upload to GitHub
