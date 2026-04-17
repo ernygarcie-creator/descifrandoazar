@@ -379,8 +379,8 @@ b,strong{font-weight:500;}
         <div class="opt" onclick="pickMod('par_inicial')"><div class="opt-t">Par inicial</div><div class="opt-s">Los dos primeros dígitos · 100 posibles · sumas 5–13 dominan el histórico</div></div>
         <div class="opt" onclick="pickMod('par_final')"><div class="opt-t">Par final</div><div class="opt-s">Los dos últimos dígitos · 100 posibles · sumas 5–13 dominan el histórico</div></div>
         <div class="opt" onclick="pickMod('dir3')"><div class="opt-t">Directa 3</div><div class="opt-s">Los tres últimos dígitos · 1,000 posibles · sumas 10–17 son las más frecuentes</div></div>
-        <div class="opt" onclick="pickMod('dir4')"><div class="opt-t">Directa 4 ✦</div><div class="opt-s">4 dígitos · 10,000 posibles · 386 nunca han aparecido</div></div>
-        <div class="opt" onclick="pickMod('dir5')"><div class="opt-t">Directa 5 ✦✦</div><div class="opt-s">5 dígitos · 100,000 posibles · ~78,000 nunca han aparecido · premios mayores</div></div>
+        <div class="opt" onclick="pickMod('dir4')"><div class="opt-t">Directa 4 ✦</div><div class="opt-s">4 dígitos · 10,000 posibles · <span id="dir4-nunca">386</span> nunca han aparecido</div></div>
+        <div class="opt" onclick="pickMod('dir5')"><div class="opt-t">Directa 5 ✦✦</div><div class="opt-s">5 dígitos · 100,000 posibles · ~<span id="dir5-nunca">78,000</span> nunca han aparecido · premios mayores</div></div>
       </div>
     </div>
   </div>
@@ -512,6 +512,20 @@ function setLoadedData(id,data){
   if(id==='tris'){
     ALL=data;
     D=ALL?.[MOD]||ALL?.['par_final']||null;
+    // Actualizar contadores de "nunca aparecidos" en textos estáticos
+    const nDir4=(ALL?.dir4?.never_appeared||[]).length;
+    const nDir5=(ALL?.dir5?.never_appeared||[]).length;
+    const fmtN=n=>n>0?n.toLocaleString('es-MX'):null;
+    const d4txt=fmtN(nDir4);
+    const d5txt=fmtN(nDir5);
+    if(d4txt){
+      ['dir4-nunca','hint-dir4-nunca'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent=d4txt;});
+      MOD_HINTS.dir4=MOD_HINTS.dir4.replace(/<span[^>]*>[\d,]+<\/span>/,d4txt);
+    }
+    if(d5txt){
+      ['dir5-nunca','hint-dir5-nunca'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent=d5txt;});
+      MOD_HINTS.dir5=MOD_HINTS.dir5.replace(/<span[^>]*>[\d,]+<\/span>/,d5txt);
+    }
     return;
   }
   if(id==='melate')MEL_DATA=data;
@@ -618,8 +632,8 @@ const MOD_HINTS={
   par_inicial:'100 combinaciones posibles. Las sumas entre 5 y 13 concentran el 70% del histórico.',
   par_final:'100 combinaciones posibles. La zona de suma 5–13 es la más frecuente históricamente.',
   dir3:'1,000 combinaciones posibles. Elige primero por suma, luego filtra por paridad.',
-  dir4:'10,000 combinaciones posibles. 386 nunca han aparecido — ahí está la oportunidad.',
-  dir5:'100,000 combinaciones posibles. ~78,000 nunca han aparecido. Trabajamos solo con las que nunca han salido.',
+  dir4:'10,000 combinaciones posibles. <span id="hint-dir4-nunca">386</span> nunca han aparecido — ahí está la oportunidad.',
+  dir5:'100,000 combinaciones posibles. ~<span id="hint-dir5-nunca">78,000</span> nunca han aparecido. Trabajamos solo con las que nunca han salido.',
 };
 
 // ═══════════════════════════════════════════════════════
@@ -1198,7 +1212,7 @@ function showDir4Ausentes(container){
   back.onclick=()=>showDir4Gen(el); el.appendChild(back);
   const never=D.never_appeared||[];
   const info=mk('div'); info.style.cssText='font-size:.79rem;color:var(--muted);margin:.3rem 0 .65rem;line-height:1.6';
-  info.innerHTML=`<b>386 combinaciones</b> que nunca han aparecido en ${fmt(D.n)} sorteos.`;
+  info.innerHTML=`<b>${never.length} combinaciones</b> que nunca han aparecido en ${fmt(D.n)} sorteos.`;
   el.appendChild(info);
   el.appendChild(buildChipGrid(never,'','',4,(p)=>showDetail(p,4,()=>showDir4Ausentes(el)),20));
   const pickBtn=mk('button','gbtn'); pickBtn.style.cssText+='background:var(--tris-d);width:100%;padding:.5rem;margin-top:.5rem';
@@ -1475,7 +1489,7 @@ function showDetail(combo,dig,backFn){
   // Plain language description
   let desc='';
   if(isNever){
-    if(dig===4) desc=`La combinación <b>${combo}</b> pertenece al grupo de suma ${s}. <b>Nunca ha aparecido</b> en los ${fmt(D.n)} sorteos de Directa 4. De 10,000 combinaciones posibles, solo hay <b>386 que el azar aún no ha generado</b> — esta es una de ellas.`;
+    if(dig===4) desc=`La combinación <b>${combo}</b> pertenece al grupo de suma ${s}. <b>Nunca ha aparecido</b> en los ${fmt(D.n)} sorteos de Directa 4. De 10,000 combinaciones posibles, solo hay <b>${(D.never_appeared||[]).length} que el azar aún no ha generado</b> — esta es una de ellas.`;
     else desc=`La combinación <b>${combo}</b> tiene suma ${s}. <b>Nunca ha aparecido</b> en los ${fmt(D.n)} sorteos registrados de Directa 5. Hemos descartado todas las que ya salieron — esta pertenece al universo de ~78,000 nunca vistas.`;
   } else if(dig===1){
     const d=pd[combo];
