@@ -42,13 +42,13 @@
   .cc-sphs{display:flex;gap:var(--cgap,3px);}
   .cc-sph{width:var(--csz,30px);height:var(--csz,30px);border-radius:50%;
     display:flex;align-items:center;justify-content:center;
-    font-family:'oaks',sans-serif;font-weight:600;font-size:var(--cfs,.7rem);
+    font-family:'Roboto',sans-serif;font-weight:600;font-size:var(--cfs,.7rem);
     border:1.5px solid var(--tris);background:var(--tris-l);color:var(--tris-d);}
   .cc-suma{font-size:.58rem;color:var(--muted2);}
   /* Legacy chip classes still referenced */
   .chip-grid{display:none;}
   .chip-sph{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;
-    justify-content:center;font-family:'oaks',sans-serif;font-weight:600;
+    justify-content:center;font-family:'Roboto',sans-serif;font-weight:600;
     font-size:.7rem;border:1.5px solid var(--tris);background:var(--tris-l);color:var(--tris-d);}
   /* Highlighted zone bar */
   .hist-bar.hl{opacity:1!important;background:var(--tris)!important;}
@@ -77,8 +77,9 @@ b,strong{font-weight:500;}
 .topnav{display:flex;gap:.2rem;}
 .tnb{padding:.3rem .7rem;border-radius:var(--pill);border:none;background:transparent;
   font-size:.76rem;color:var(--muted);cursor:pointer;transition:all .12s;font-family:'Roboto',sans-serif;font-weight:300;}
-.tnb:hover,.tnb.active{background:var(--surf2);color:var(--text);}
-.tnb.active{font-weight:500;}
+.tnb:hover{background:rgba(229,37,53,.1);color:#e52535;}
+.tnb.active{background:#e52535;color:#fff;font-weight:500;}
+.tnb.active:hover{background:#c41e2e;}
 
 /* ── VIEWS ── */
 .view{display:none;}
@@ -86,7 +87,7 @@ b,strong{font-weight:500;}
 
 /* ══════ HOME ══════ */
 .hero{max-width:680px;margin:0 auto;padding:3rem 1.5rem 1.5rem;text-align:center;}
-.hero h1{font-size:1.85rem;font-weight:700;font-family:'oaks',sans-serif;letter-spacing:-.01em;line-height:1.25;margin-bottom:.7rem;}
+.hero h1{font-size:1.85rem;font-weight:400;font-family:'oaks',sans-serif;letter-spacing:-.01em;line-height:1.25;margin-bottom:.7rem;}
 .hero h1 span{color:inherit;}
 .hero p{font-size:.93rem;color:var(--muted);line-height:1.8;max-width:520px;margin:0 auto 2rem;}
 .game-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:.7rem;
@@ -131,7 +132,7 @@ b,strong{font-weight:500;}
 
 /* ── SPHERE ── */
 .sph{width:42px;height:42px;border-radius:50%;display:flex;align-items:center;justify-content:center;
-  font-family:'oaks',sans-serif;font-weight:600;font-size:.93rem;
+  font-family:'Roboto',sans-serif;font-weight:600;font-size:.93rem;
   border:2px solid var(--tris);background:var(--tris-l);color:var(--tris-d);
   cursor:pointer;transition:transform .1s;flex-shrink:0;}
 .sph:hover{transform:scale(1.08);}
@@ -197,7 +198,7 @@ b,strong{font-weight:500;}
 /* ── FICHA ROWS ── */
 .frow{display:flex;align-items:center;gap:.45rem;padding:.27rem 0;border-bottom:.5px solid var(--border);font-size:.72rem;}
 .fkey{color:var(--muted2);width:105px;flex-shrink:0;}
-.fval{font-family:'oaks',sans-serif;font-size:.7rem;}
+.fval{font-family:'Roboto',sans-serif;font-size:.7rem;}
 .fbar{flex:1;height:4px;background:var(--surf2);border-radius:2px;overflow:hidden;}
 .fbar-f{height:100%;border-radius:2px;background:var(--tris);}
 
@@ -214,7 +215,7 @@ b,strong{font-weight:500;}
 .sum-chip{display:inline-block;padding:.1rem .38rem;border-radius:4px;font-size:.65rem;font-weight:600;}
 
 /* ── ANA INPUT ── */
-.ana-in{font-family:'oaks',sans-serif;font-size:1.4rem;font-weight:600;
+.ana-in{font-family:'Roboto',sans-serif;font-size:1.4rem;font-weight:600;
   padding:.42rem .68rem;border:1.5px solid var(--border-md);border-radius:var(--rsm);
   background:var(--surf);color:var(--tris);outline:none;text-align:center;
   letter-spacing:.15em;transition:border-color .15s;}
@@ -232,7 +233,7 @@ b,strong{font-weight:500;}
 .ctx-c.active{display:block;}
 .ctx-box{background:var(--surf2);border-radius:var(--rsm);padding:.55rem .75rem;margin-bottom:.38rem;font-size:.72rem;}
 .ctx-sumas{display:flex;gap:.22rem;flex-wrap:wrap;margin:.28rem 0;}
-.ctx-s{padding:.1rem .38rem;border-radius:3px;font-family:'oaks',sans-serif;
+.ctx-s{padding:.1rem .38rem;border-radius:3px;font-family:'Roboto',sans-serif;
   font-size:.68rem;font-weight:600;background:var(--tris-l);color:var(--tris-d);}
 
 /* ── FILTER PROMPT (for large lists) ── */
@@ -286,10 +287,10 @@ b,strong{font-weight:500;}
 <!-- ══════════════ HOME ══════════════ -->
 <div class="view active" id="view-home">
   <div class="hero">
-    <h1><b style="color:#e87a1d">Lo posible</b> es distinto<br>a lo probable</h1>
+    <h1>Lo <b style="color:#e52535;font-weight:700">posible</b> es distinto<br>a lo probable</h1>
     <p>Analizamos el comportamiento histórico de los sorteos para diseccionar el azar y mostrarte el mapa navegable de lo que aún no puedes visualizar. No pretendemos predecir combinaciones, te ayudamos a ver y entender su forma. Usa esta herramienta como apoyo para tu suerte.</p>
   </div>
-  <div style="text-align:center;margin:1.5rem 0 .75rem"><span style="font-size:1.75rem;font-weight:700;color:#e87a1d;letter-spacing:-.02em">Selecciona tu juego</span></div>
+  <div style="text-align:center;margin:1.5rem 0 .75rem"><span style="font-size:1.75rem;font-weight:700;font-family:'oaks',sans-serif;color:#e52535;letter-spacing:-.01em">Selecciona tu juego</span></div>
   <div class="game-grid">
     <div class="gc" style="--c:var(--tris)" onclick="showView('tris')">
       <div class="gc-name">TRIS</div>
@@ -1514,7 +1515,7 @@ function showDetail(combo,dig,backFn){
     [[d.rezago_real===0?'HOY':fmt(d.rezago_real),'Rezago'],[fmt(d.veces_total),'Apariciones'],[d.ultima_fecha||'—','Última vez']].forEach(([v,l])=>{
       const b=mk('div'); b.style.cssText='background:var(--surf2);border-radius:8px;padding:.5rem .65rem';
       b.innerHTML=`<div style="font-size:.62rem;color:var(--muted2);text-transform:uppercase;letter-spacing:.06em;margin-bottom:.15rem">${l}</div>
-        <div style="font-family:'oaks',sans-serif;font-weight:500;font-size:.8rem">${v}</div>`;
+        <div style="font-family:'Roboto',sans-serif;font-weight:500;font-size:.8rem">${v}</div>`;
       grid.appendChild(b);
     });
     if(dig===2){
@@ -1523,7 +1524,7 @@ function showDetail(combo,dig,backFn){
         const row2=mk('div'); row2.style.cssText='display:flex;align-items:center;gap:.4rem;margin:.22rem 0;font-size:.72rem;grid-column:1/-1';
         row2.innerHTML=`<span style="width:52px;color:var(--muted2)">${l}</span>
           <div style="flex:1;height:4px;background:var(--surf2);border-radius:2px;overflow:hidden"><div style="height:100%;width:${Math.min(val/exp*100,100)}%;background:${c.bc||'var(--tris)'};border-radius:2px"></div></div>
-          <span style="font-family:'oaks',sans-serif;font-size:.68rem">${val}</span>`;
+          <span style="font-family:'Roboto',sans-serif;font-size:.68rem">${val}</span>`;
         grid.appendChild(row2);
       });
     }
@@ -1661,21 +1662,21 @@ function initGanaGato(el, data) {
       .gg-card-title{font-size:12px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:var(--cur);margin-bottom:12px}
       .gg-last-sorteo{background:var(--surf,#fff);border:2px solid var(--cur);border-radius:var(--radius,14px);padding:16px 18px;margin-bottom:22px;display:flex;align-items:center;gap:16px}
       .gg-last-sorteo-label{font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--cur);margin-bottom:4px}
-      .gg-last-sorteo-nums{font-family:'oaks',sans-serif;font-size:18px;font-weight:700;color:var(--text);letter-spacing:.04em}
+      .gg-last-sorteo-nums{font-family:'Roboto',sans-serif;font-size:18px;font-weight:700;color:var(--text);letter-spacing:.04em}
       .gg-last-sorteo-meta{font-size:12px;color:var(--text-3);margin-top:2px}
       .gg-board-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;width:240px;margin:0 auto}
       .gg-cell{width:72px;height:72px;border-radius:12px;border:2px solid var(--cur-border);background:var(--cur-light);display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;transition:border-color .15s,background .15s,box-shadow .15s;position:relative;user-select:none}
       .gg-cell:hover:not(.gg-cell-joker){border-color:var(--cur);background:var(--surf,#fff)}
       .gg-cell.gg-active{border-color:var(--cur);background:var(--surf,#fff);box-shadow:0 0 0 3px rgba(159,127,204,.18)}
-      .gg-cell-num{font-family:'oaks',sans-serif;font-size:26px;font-weight:600;color:var(--cur);line-height:1}
+      .gg-cell-num{font-family:'Roboto',sans-serif;font-size:26px;font-weight:600;color:var(--cur);line-height:1}
       .gg-cell-pos{font-size:9px;font-weight:600;letter-spacing:.05em;color:var(--text-3);position:absolute;top:5px;left:7px}
       .gg-cell-joker{background:transparent;border-color:var(--cur-dark);cursor:default}
       .gg-cell-joker .gg-joker-icon{font-size:28px}
       .gg-picker-row{display:flex;gap:7px;justify-content:center;margin-top:10px}
-      .gg-pick-btn{width:44px;height:44px;border-radius:10px;border:2px solid var(--cur-border);background:var(--cur-light);font-family:'oaks',sans-serif;font-size:18px;font-weight:600;color:var(--cur);cursor:pointer;transition:background .12s,border-color .12s,transform .08s;display:flex;align-items:center;justify-content:center}
+      .gg-pick-btn{width:44px;height:44px;border-radius:10px;border:2px solid var(--cur-border);background:var(--cur-light);font-family:'Roboto',sans-serif;font-size:18px;font-weight:600;color:var(--cur);cursor:pointer;transition:background .12s,border-color .12s,transform .08s;display:flex;align-items:center;justify-content:center}
       .gg-pick-btn:hover{background:var(--surf,#fff);border-color:var(--cur)}
       .gg-pick-btn.gg-sel{background:var(--cur);color:#fff;border-color:var(--cur-dark);transform:scale(1.08)}
-      .gg-sphere{width:38px;height:38px;border-radius:50%;border:2px solid var(--cur-border);background:var(--cur-light);font-family:'oaks',sans-serif;font-size:16px;font-weight:600;color:var(--cur);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+      .gg-sphere{width:38px;height:38px;border-radius:50%;border:2px solid var(--cur-border);background:var(--cur-light);font-family:'Roboto',sans-serif;font-size:16px;font-weight:600;color:var(--cur);display:flex;align-items:center;justify-content:center;flex-shrink:0}
       .gg-stat-bar-wrap{margin-bottom:10px}
       .gg-stat-bar-label{display:flex;justify-content:space-between;font-size:12px;color:var(--text-2);margin-bottom:4px}
       .gg-stat-bar-label b{color:var(--text);font-weight:600}
@@ -1690,7 +1691,7 @@ function initGanaGato(el, data) {
       .gg-crit-cell.gg-high{background:#fff0f0;border-color:#f0a0a0}
       .gg-crit-cell.gg-mid{background:#fff8e6;border-color:#f0c060}
       .gg-crit-cell.gg-joker{background:transparent}
-      .gg-crit-num{font-family:'oaks',sans-serif;font-size:20px;font-weight:700;line-height:1}
+      .gg-crit-num{font-family:'Roboto',sans-serif;font-size:20px;font-weight:700;line-height:1}
       .gg-crit-cell.gg-high .gg-crit-num{color:#a03030}
       .gg-crit-cell.gg-mid  .gg-crit-num{color:#8a5a00}
       .gg-crit-cell.gg-joker .gg-crit-num{color:#fff;font-size:22px}
@@ -1703,7 +1704,7 @@ function initGanaGato(el, data) {
       .gg-resumen-text{font-size:14px;color:var(--text-2);line-height:1.6}
       .gg-combo-item{border:1.5px solid var(--cur-border);background:var(--cur-light);border-radius:10px;padding:12px 16px;cursor:pointer;transition:background .13s,border-color .13s;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;gap:12px}
       .gg-combo-item:hover{background:var(--surf,#fff);border-color:var(--cur)}
-      .gg-combo-nums{font-family:'oaks',sans-serif;font-size:16px;font-weight:600;color:var(--text);letter-spacing:.04em}
+      .gg-combo-nums{font-family:'Roboto',sans-serif;font-size:16px;font-weight:600;color:var(--text);letter-spacing:.04em}
       .gg-combo-meta{font-size:12px;color:var(--text-3);text-align:right}
       .gg-combo-list-scroll{max-height:420px;overflow-y:auto;padding-right:4px}
       .gg-combo-list-scroll::-webkit-scrollbar{width:4px}
@@ -1713,7 +1714,7 @@ function initGanaGato(el, data) {
       .gg-range-opt:hover{background:var(--surf,#fff);border-color:var(--cur);color:var(--cur)}
       .gg-range-opt.gg-sel{background:var(--cur);border-color:var(--cur-dark);color:#fff}
       .gg-universe-box{background:var(--surf,#fff);border:1.5px solid var(--cur-border);border-radius:10px;padding:14px 16px;display:flex;align-items:center;gap:12px;margin-bottom:18px}
-      .gg-universe-num{font-family:'oaks',sans-serif;font-size:22px;font-weight:600;color:var(--cur)}
+      .gg-universe-num{font-family:'Roboto',sans-serif;font-size:22px;font-weight:600;color:var(--cur)}
       .gg-universe-label{font-size:12px;color:var(--text-2);line-height:1.4}
       .gg-guia-desc{font-size:13px;color:var(--text-2);margin-bottom:14px;line-height:1.5}
       .gg-siguiente-btn{width:100%;margin-top:16px;padding:13px;font-size:15px;border-radius:12px;border:1.5px solid var(--cur-dark);background:var(--cur);color:#fff;font-weight:600;cursor:pointer;transition:opacity .12s}
@@ -1727,7 +1728,7 @@ function initGanaGato(el, data) {
       .gg-patron-item{border:1.5px solid var(--cur-border);background:var(--cur-light);border-radius:10px;padding:12px 16px;cursor:pointer;transition:background .12s,border-color .12s;display:flex;align-items:center;gap:10px}
       .gg-patron-item:hover{background:var(--surf,#fff);border-color:var(--cur)}
       .gg-patron-item.gg-sel{background:var(--surf,#fff);border-color:var(--cur);border-width:2px}
-      .gg-patron-key{font-family:'oaks',sans-serif;font-size:15px;font-weight:700;color:var(--text)}
+      .gg-patron-key{font-family:'Roboto',sans-serif;font-size:15px;font-weight:700;color:var(--text)}
       .gg-patron-stats{font-size:12px;color:var(--text-2);margin-top:2px}
       .gg-grupo-btn{display:flex;align-items:center;justify-content:space-between;border:1.5px solid var(--cur-border);background:var(--cur-light);border-radius:10px;padding:12px 16px;cursor:pointer;transition:background .12s;margin-bottom:4px}
       .gg-grupo-btn:hover{background:var(--surf,#fff)}
@@ -2037,7 +2038,7 @@ function initGanaGato(el, data) {
         const bc=g.c==='gg-high'?'#f0a0a0':'#f0c060';
         boardH+=`<div style="width:66px;height:66px;border-radius:12px;border:2px solid ${bc};background:var(--surf,#fff);display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative">
           <span style="position:absolute;top:4px;left:6px;font-size:9px;font-weight:600;color:var(--text-3)">C${g.di+1}</span>
-          <span style="font-family:'oaks',sans-serif;font-size:24px;font-weight:700;color:var(--cur)">${vals[g.di]}</span>
+          <span style="font-family:'Roboto',sans-serif;font-size:24px;font-weight:700;color:var(--cur)">${vals[g.di]}</span>
         </div>`;
       }
     });
@@ -2051,7 +2052,7 @@ function initGanaGato(el, data) {
     let sumaH = `<div class="gg-card"><div class="gg-card-title">Suma total</div>
       ${nuncaH}
       <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px">
-        <span style="font-family:'oaks',sans-serif;font-size:36px;font-weight:700;color:var(--cur)">${suma}</span>
+        <span style="font-family:'Roboto',sans-serif;font-size:36px;font-weight:700;color:var(--cur)">${suma}</span>
         <div>
           <div class="${sumaBadge}">${sumaZona.toUpperCase()}</div>
           <div style="font-size:12px;color:var(--text-2);margin-top:4px">Ocurrió en el <b>${sumaPct}%</b> del histórico</div>
@@ -2100,7 +2101,7 @@ function initGanaGato(el, data) {
       subH+=`<div style="background:var(--cur-light);border-radius:10px;padding:10px 12px;border:1.5px solid var(--cur-border)">
         <div style="font-size:10px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--cur);margin-bottom:3px">${k} · ${info.label}</div>
         <div style="font-size:11px;color:var(--text-3);margin-bottom:4px">${info.formula}</div>
-        <div style="font-family:'oaks',sans-serif;font-size:22px;font-weight:700;color:var(--text)">${sv} ${arrow}</div>
+        <div style="font-family:'Roboto',sans-serif;font-size:22px;font-weight:700;color:var(--text)">${sv} ${arrow}</div>
         <div style="font-size:11px;color:var(--text-3);margin-top:3px">rango: ${hist.min}–${hist.max} · moda ${hist.moda}</div>
         <div style="font-size:11px;color:var(--cur);margin-top:2px">${freqCnt>0?`Esta combinación: ${freqCnt}× (${(freqCnt/data.n*100).toFixed(1)}%)`:'Sin registro previo'}</div>
       </div>`;
@@ -2130,7 +2131,7 @@ function initGanaGato(el, data) {
       const bg=highlighted?'var(--cur)':inZone?'var(--cur-border)':'#e0d5f0';
       html+=`<div style="flex:1;display:flex;flex-direction:column;align-items:center"><div style="width:100%;height:${h}px;background:${bg};border-radius:2px 2px 0 0" title="Suma ${s}: ${pct}%"></div></div>`;
     }
-    html+=`</div><div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text-3);margin-top:4px;font-family:'oaks',sans-serif"><span>12</span><span>← zona central 19–29 →</span><span>37</span></div>`;
+    html+=`</div><div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text-3);margin-top:4px;font-family:'Roboto',sans-serif"><span>12</span><span>← zona central 19–29 →</span><span>37</span></div>`;
     chartEl.innerHTML = html;
   }
 
@@ -2225,9 +2226,9 @@ function initGanaGato(el, data) {
     }
     const total=pp.esquinas+pp.equilibrado+pp.bordes;
     infoEl.innerHTML=`<div style="display:flex;flex-direction:column;gap:6px">
-      <div style="display:flex;align-items:center;justify-content:space-between;font-size:13px"><span style="color:var(--text-2)">Peso en esquinas</span><span style="font-family:'oaks',sans-serif;font-weight:600;color:var(--text)">${pp.esquinas.toLocaleString('es-MX')} (${(pp.esquinas/total*100).toFixed(1)}%)</span></div>
-      <div style="display:flex;align-items:center;justify-content:space-between;font-size:13px"><span style="color:var(--text-2)">Tablero equilibrado</span><span style="font-family:'oaks',sans-serif;font-weight:600;color:var(--text)">${pp.equilibrado.toLocaleString('es-MX')} (${(pp.equilibrado/total*100).toFixed(1)}%)</span></div>
-      <div style="display:flex;align-items:center;justify-content:space-between;font-size:13px"><span style="color:var(--text-2)">Peso en bordes</span><span style="font-family:'oaks',sans-serif;font-weight:600;color:var(--text)">${pp.bordes.toLocaleString('es-MX')} (${(pp.bordes/total*100).toFixed(1)}%)</span></div>
+      <div style="display:flex;align-items:center;justify-content:space-between;font-size:13px"><span style="color:var(--text-2)">Peso en esquinas</span><span style="font-family:'Roboto',sans-serif;font-weight:600;color:var(--text)">${pp.esquinas.toLocaleString('es-MX')} (${(pp.esquinas/total*100).toFixed(1)}%)</span></div>
+      <div style="display:flex;align-items:center;justify-content:space-between;font-size:13px"><span style="color:var(--text-2)">Tablero equilibrado</span><span style="font-family:'Roboto',sans-serif;font-weight:600;color:var(--text)">${pp.equilibrado.toLocaleString('es-MX')} (${(pp.equilibrado/total*100).toFixed(1)}%)</span></div>
+      <div style="display:flex;align-items:center;justify-content:space-between;font-size:13px"><span style="color:var(--text-2)">Peso en bordes</span><span style="font-family:'Roboto',sans-serif;font-weight:600;color:var(--text)">${pp.bordes.toLocaleString('es-MX')} (${(pp.bordes/total*100).toFixed(1)}%)</span></div>
       <div style="font-size:11px;color:var(--text-3);margin-top:4px">Total en esta selección: ${total.toLocaleString('es-MX')} tableros</div>
     </div>`;
     opts[0].textContent=`Peso en esquinas · ${pp.esquinas.toLocaleString('es-MX')}`;
@@ -2415,7 +2416,7 @@ function initChispazo(el, data) {
     s.textContent = `
       .chis-root { --cur:${CHIS_COLOR.main}; --curl:${CHIS_COLOR.light}; --curd:${CHIS_COLOR.dark};
         --g50:#f8f7f5;--g100:#eeecea;--g200:#d6d4d0;--g400:#aaa8a4;--g500:#888580;--g700:#3a3936;--g900:#1a1917;
-        --r:10px;--rl:14px;--f:'Roboto',system-ui,sans-serif;--m:'oaks',sans-serif;
+        --r:10px;--rl:14px;--f:'Roboto',system-ui,sans-serif;--m:'Roboto',sans-serif;
         font-family:var(--f);color:var(--g900);font-size:15px;line-height:1.5; }
 
       .chis-pg  { display:none;padding:1.2rem;max-width:820px;margin:0 auto }
@@ -3234,7 +3235,7 @@ function initMelateRetro(el, data) {
     s.textContent = `
       .melr-root { --cur:${MELR_COLOR.main}; --curl:${MELR_COLOR.light}; --curd:${MELR_COLOR.dark};
         --g50:#f8f7f5;--g100:#eeecea;--g200:#d6d4d0;--g400:#aaa8a4;--g500:#888580;--g700:#3a3936;--g900:#1a1917;
-        --r:10px;--rl:14px;--f:'Roboto',system-ui,sans-serif;--m:'oaks',sans-serif;
+        --r:10px;--rl:14px;--f:'Roboto',system-ui,sans-serif;--m:'Roboto',sans-serif;
         font-family:var(--f);color:var(--g900);font-size:15px;line-height:1.5; }
 
       .melr-pg  { display:none;padding:1.2rem;max-width:820px;margin:0 auto }
@@ -4075,7 +4076,7 @@ if (!window.MEL_CSS_INJECTED) {
   --g500:#888580;--g700:#3a3936;--g900:#1a1917;
   --cur:#C0272D;--curl:#FCEBEB;--curd:#501313;
   --r:10px;--rl:14px;
-  --f:'Roboto',system-ui,sans-serif;--m:'oaks',sans-serif;
+  --f:'Roboto',system-ui,sans-serif;--m:'Roboto',sans-serif;
 }
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:var(--f);background:var(--g50);color:var(--g900);font-size:15px;line-height:1.5;overflow-x:hidden;max-width:100vw}
