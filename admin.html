@@ -388,23 +388,62 @@ function buildDraw() {
 // ═══════════════════════════════════════════════════════
 
 // ── Helpers ──────────────────────────────────────────
-function calcSuma(nums) { return nums.reduce((a,b)=>a+b,0); }
+function calcSuma(nums) {
+  return Array.from(nums).reduce((a,b) => a + (+b), 0);
+}
+
+/**
+ * Convierte CUALQUIER formato de entrada de historico_full a un array puro de números.
+ * Maneja: array puro, objeto {combo:array}, objeto {combo:string}, objeto {key:string}
+ * Retorna null si no se puede parsear.
+ */
+function toNumArray(e) {
+  if (e == null) return null;
+  // Ya es array: [3, 11, 15, 22, 28]
+  if (Array.isArray(e)) {
+    const nums = e.map(Number).filter(n => Number.isFinite(n) && n > 0);
+    return nums.length > 0 ? nums : null;
+  }
+  // Objeto con combo como array: {combo: [3,11,15,22,28], ...}
+  if (e.combo && Array.isArray(e.combo)) {
+    const nums = e.combo.map(Number).filter(n => Number.isFinite(n) && n > 0);
+    return nums.length > 0 ? nums : null;
+  }
+  // Objeto con combo como string: {combo: "03-11-15-22-28", ...}
+  if (e.combo && typeof e.combo === 'string') {
+    const nums = e.combo.split(/[-,\s]+/).map(Number).filter(n => Number.isFinite(n) && n > 0);
+    return nums.length > 0 ? nums : null;
+  }
+  // Objeto con key como string: {key: "03-11-15-22-28", ...}
+  if (e.key && typeof e.key === 'string' && e.key.includes('-')) {
+    const nums = e.key.split('-').map(Number).filter(n => Number.isFinite(n) && n > 0);
+    return nums.length > 0 ? nums : null;
+  }
+  return null;
+}
 
 function calcForma(nums, maxNum) {
-  // Divide in bands of ~10
-  const bandSize = maxNum <= 28 ? 7 : maxNum <= 39 ? 10 : 10;
-  const bands = {};
-  nums.forEach(n => {
-    const b = Math.floor((n-1)/bandSize);
-    bands[b] = (bands[b]||0)+1;
-  });
-  return Object.values(bands).sort((a,b)=>b-a).filter(v=>v>0).join('+');
+  if (!nums || nums.length === 0) return '';
+  try {
+    const bandSize = maxNum <= 28 ? 7 : maxNum <= 39 ? 10 : 10;
+    const bands = {};
+    for (const n of nums) {
+      const v = +n;
+      if (!Number.isFinite(v) || v <= 0) continue;
+      const b = Math.floor((v - 1) / bandSize);
+      bands[b] = (bands[b] || 0) + 1;
+    }
+    return Object.values(bands).sort((a,b) => b-a).filter(v => v>0).join('+') || '';
+  } catch(err) { return ''; }
 }
 
 function calcParidad(nums) {
-  const imp = nums.filter(n=>n%2!==0).length;
-  const par = nums.length - imp;
-  return `${imp}i-${par}p`;
+  if (!nums || nums.length === 0) return '';
+  try {
+    const arr = Array.from(nums).map(Number);
+    const imp = arr.filter(n => n % 2 !== 0).length;
+    return `${imp}i-${arr.length - imp}p`;
+  } catch(err) { return ''; }
 }
 
 function calcEtiqueta(forma, fent) {
@@ -413,7 +452,7 @@ function calcEtiqueta(forma, fent) {
 
 function calcBandas(nums, maxNum) {
   const bandSize = maxNum <= 28 ? 7 : 10;
-  const b = new Set(nums.map(n=>Math.floor((n-1)/bandSize)));
+  const b = new Set(Array.from(nums).map(n => Math.floor((+n-1)/bandSize)));
   return b.size;
 }
 
@@ -554,9 +593,22 @@ function recalcMelateFamily(data, draw, game) {
     if (game === 'melate-retro') newEntry.r7 = draw.adicional;
     if (game === 'melate') newEntry.r7 = draw.adicional;
 
-    // Prepend to historico
+    // Prepend to historico (last 200, full objects — para UI de últimos sorteos)
     sec.historico = [newEntry, ...(sec.historico||[])].slice(0,200);
-    sec.historico_full = [newEntry, ...(sec.historico_full||[])];
+
+    // Prepend to historico_full (arrays de números PUROS — así lo espera index.html)
+    // toNumArray maneja cualquier formato: array puro, {combo:array}, {combo:string}, {key:string}
+    const prevFull = (sec.historico_full||[]).map(toNumArray).filter(e => e !== null);
+    if (prevFull.length < (sec.historico_full||[]).length) {
+      log(`NORM [${s||game}]: ${(sec.historico_full||[]).length - prevFull.length} entradas no parseables ignoradas`, 'info');
+    }
+    sec.historico_full = [nums, ...prevFull];
+
+    // Actualizar historico_r7 (array paralelo de adicionales)
+    const needsR7 = (game === 'melate' && s === 'melate') || game === 'melate-retro';
+    if (needsR7) {
+      sec.historico_r7 = [draw.adicional != null ? draw.adicional : null, ...(sec.historico_r7||[])];
+    }
 
     // Update index
     if (!sec.historico_index) sec.historico_index = {};
@@ -567,51 +619,61 @@ function recalcMelateFamily(data, draw, game) {
     sec.meta.n = (sec.meta.n||0) + 1;
 
     // Recalculate distributions from historico_full
+    // Usamos toNumArray para manejar cualquier formato residual
     const all = sec.historico_full;
     const n = all.length;
+    const fd = {}, pd = {}, ed = {}, allSumas = [];
+    let skipped = 0;
 
-    // forma_dist
-    const fd = {};
-    all.forEach(e => { fd[e.forma] = (fd[e.forma]||0)+1; });
+    // Diagnóstico: loguear formato de las primeras 3 entradas
+    if (all.length > 0) {
+      const sample = all.slice(0,3).map(e => Array.isArray(e) ? `arr[${e.length}]` : (e==null?'null':`obj{${Object.keys(e||{}).slice(0,3).join(',')}}`));
+      log(`[${s||game}] historico_full[0..2]: ${sample.join(', ')} (total ${all.length})`, 'info');
+    }
+
+    all.forEach(e => {
+      const c = Array.isArray(e) ? e : toNumArray(e);
+      if (!c || c.length === 0) { skipped++; return; }
+      const f  = calcForma(c, maxNum);
+      const p  = calcParidad(c);
+      if (!f || !p) { skipped++; return; }
+      const et = fent ? (fent[f] || 'balanceada') : 'balanceada';
+      const sm = calcSuma(c);
+      fd[f]  = (fd[f] ||0) + 1;
+      pd[p]  = (pd[p] ||0) + 1;
+      ed[et] = (ed[et]||0) + 1;
+      allSumas.push(sm);
+    });
+    if (skipped > 0) log(`[${s||game}] ${skipped} entradas omitidas en distribuciones`, 'info');
+
+    const validN = allSumas.length || 1; // entradas válidas para porcentajes
     sec.formas_dist = {};
     Object.entries(fd).sort((a,b)=>b[1]-a[1]).forEach(([k,v])=>{
-      sec.formas_dist[k] = { cnt:v, pct:Math.round(v/n*10000)/100 };
+      sec.formas_dist[k] = { cnt:v, pct:Math.round(v/validN*10000)/100 };
     });
-
-    // paridad_dist
-    const pd = {};
-    all.forEach(e => { pd[e.paridad] = (pd[e.paridad]||0)+1; });
     sec.paridad_dist = {};
     Object.entries(pd).sort((a,b)=>b[1]-a[1]).forEach(([k,v])=>{
-      sec.paridad_dist[k] = { cnt:v, pct:Math.round(v/n*10000)/100 };
+      sec.paridad_dist[k] = { cnt:v, pct:Math.round(v/validN*10000)/100 };
     });
-
-    // etiqueta/entropia_dist
-    const ed = {};
-    all.forEach(e => { ed[e.etiqueta] = (ed[e.etiqueta]||0)+1; });
     sec.entropia_dist = {};
     Object.entries(ed).sort((a,b)=>b[1]-a[1]).forEach(([k,v])=>{
-      sec.entropia_dist[k] = { cnt:v, pct:Math.round(v/n*10000)/100 };
+      sec.entropia_dist[k] = { cnt:v, pct:Math.round(v/validN*10000)/100 };
     });
 
-    // suma_zonas
+    // suma_zonas — usamos allSumas calculadas arriba
     if (sec.suma_zonas) {
-      const zones = sec.suma_zonas;
-      const total = all.length;
-      Object.keys(zones).forEach(zk => {
-        const z = zones[zk];
+      Object.keys(sec.suma_zonas).forEach(zk => {
+        const z = sec.suma_zonas[zk];
         if (!z || !z.rango) return;
-        const cnt = all.filter(e=>e.suma>=z.rango[0]&&e.suma<=z.rango[1]).length;
+        const cnt = allSumas.filter(sm => sm>=z.rango[0] && sm<=z.rango[1]).length;
         z.cnt_hist = cnt;
-        z.pct_hist = Math.round(cnt/total*10000)/100;
+        z.pct_hist = Math.round(cnt/validN*10000)/100;
       });
     }
 
     // Update meta
-    const sumas = all.map(e=>e.suma).sort((a,b)=>a-b);
-    sec.meta.suma_media = Math.round(sumas.reduce((a,b)=>a+b,0)/sumas.length*100)/100;
-    // forma/paridad dominante
-    sec.meta.forma_dominante = Object.entries(fd).sort((a,b)=>b[1]-a[1])[0]?.[0];
+    sec.meta.suma_media = Math.round(allSumas.reduce((a,b)=>a+b,0)/validN*100)/100;
+    sec.meta.forma_dominante   = Object.entries(fd).sort((a,b)=>b[1]-a[1])[0]?.[0];
     sec.meta.paridad_dominante = Object.entries(pd).sort((a,b)=>b[1]-a[1])[0]?.[0];
   });
 
@@ -636,7 +698,10 @@ function recalcChispazo(data, draw) {
   };
 
   sec.historico = [newEntry, ...sec.historico].slice(0,200);
-  sec.historico_full = [newEntry, ...sec.historico_full];
+  // historico_full: arrays de números puros (así lo espera index.html)
+  // toNumArray maneja cualquier formato: array puro, {combo:array}, {combo:string}, {key:string}
+  const prevChisFull = (sec.historico_full||[]).map(toNumArray).filter(e => e !== null);
+  sec.historico_full = [nums, ...prevChisFull];
   if (!sec.historico_index) sec.historico_index = {};
   sec.historico_index[combo] = (sec.historico_index[combo]||0)+1;
 
@@ -644,27 +709,42 @@ function recalcChispazo(data, draw) {
   const n = all.length;
   sec.meta.n = n;
 
-  const fd={},pd={},ed={};
+  // historico_full — usamos toNumArray para manejar cualquier formato residual
+  const fd={},pd={},ed={},allSumas=[];
+  let chisSkipped=0;
+  if (all.length > 0) {
+    const sample = all.slice(0,3).map(e => Array.isArray(e) ? `arr[${e.length}]` : (e==null?'null':`obj{${Object.keys(e||{}).slice(0,3).join(',')}}`));
+    log(`[chispazo] historico_full[0..2]: ${sample.join(', ')} (total ${all.length})`, 'info');
+  }
   all.forEach(e=>{
-    fd[e.forma]=(fd[e.forma]||0)+1;
-    pd[e.paridad]=(pd[e.paridad]||0)+1;
-    ed[e.etiqueta]=(ed[e.etiqueta]||0)+1;
+    const c = Array.isArray(e) ? e : toNumArray(e);
+    if (!c || c.length === 0) { chisSkipped++; return; }
+    const f  = calcForma(c, 28);
+    const p  = calcParidad(c);
+    if (!f || !p) { chisSkipped++; return; }
+    const et = d.fent?.[f] || 'balanceada';
+    const sm = calcSuma(c);
+    fd[f]=(fd[f]||0)+1; pd[p]=(pd[p]||0)+1; ed[et]=(ed[et]||0)+1;
+    allSumas.push(sm);
   });
+  if (chisSkipped > 0) log(`[chispazo] ${chisSkipped} entradas omitidas`, 'info');
+  const validN = allSumas.length || 1; // entradas válidas para porcentajes
   sec.formas_dist={};
-  Object.entries(fd).sort((a,b)=>b[1]-a[1]).forEach(([k,v])=>{sec.formas_dist[k]={cnt:v,pct:Math.round(v/n*10000)/100};});
+  Object.entries(fd).sort((a,b)=>b[1]-a[1]).forEach(([k,v])=>{sec.formas_dist[k]={cnt:v,pct:Math.round(v/validN*10000)/100};});
   sec.paridad_dist={};
-  Object.entries(pd).sort((a,b)=>b[1]-a[1]).forEach(([k,v])=>{sec.paridad_dist[k]={cnt:v,pct:Math.round(v/n*10000)/100};});
+  Object.entries(pd).sort((a,b)=>b[1]-a[1]).forEach(([k,v])=>{sec.paridad_dist[k]={cnt:v,pct:Math.round(v/validN*10000)/100};});
   sec.entropia_dist={};
-  Object.entries(ed).sort((a,b)=>b[1]-a[1]).forEach(([k,v])=>{sec.entropia_dist[k]={cnt:v,pct:Math.round(v/n*10000)/100};});
+  Object.entries(ed).sort((a,b)=>b[1]-a[1]).forEach(([k,v])=>{sec.entropia_dist[k]={cnt:v,pct:Math.round(v/validN*10000)/100};});
 
   if (sec.suma_zonas) {
     Object.keys(sec.suma_zonas).forEach(zk=>{
       const z=sec.suma_zonas[zk];
       if (!z || !z.rango) return;
-      const cnt=all.filter(e=>e.suma>=z.rango[0]&&e.suma<=z.rango[1]).length;
-      z.cnt_hist=cnt; z.pct_hist=Math.round(cnt/n*10000)/100;
+      const cnt=allSumas.filter(sm=>sm>=z.rango[0]&&sm<=z.rango[1]).length;
+      z.cnt_hist=cnt; z.pct_hist=Math.round(cnt/validN*10000)/100;
     });
   }
+  sec.meta.suma_media=Math.round(allSumas.reduce((a,b)=>a+b,0)/validN*100)/100;
   sec.meta.forma_dominante=Object.entries(fd).sort((a,b)=>b[1]-a[1])[0]?.[0];
   sec.meta.paridad_dominante=Object.entries(pd).sort((a,b)=>b[1]-a[1])[0]?.[0];
   return d;
@@ -754,7 +834,18 @@ async function ghFetch(endpoint, opts={}) {
 
 async function getFileSha(path) {
   const data = await ghFetch(`/repos/${REPO_OWNER}/${REPO_NAME}/contents/${path}?ref=${BRANCH}`);
-  return { sha: data.sha, content: atob(data.content.replace(/\n/g,'')) };
+  let content;
+  if (data.content && data.content.trim()) {
+    // Archivo ≤ 1 MB: contenido incluido en la respuesta
+    content = atob(data.content.replace(/\n/g,''));
+  } else {
+    // Archivo > 1 MB: descargar desde download_url
+    log('Archivo grande (>1 MB), descargando contenido directo...', 'info');
+    const res = await fetch(data.download_url);
+    if (!res.ok) throw new Error(`Error descargando archivo: ${res.status}`);
+    content = await res.text();
+  }
+  return { sha: data.sha, content };
 }
 
 async function updateFile(path, content, sha, message) {
@@ -790,7 +881,7 @@ async function runUpdate(confirmedDraw) {
     log('Recalculando estadísticas...', 'info');
     setProgress(45, 'Recalculando estadísticas...');
     const newData = recalculate(currentData, confirmedDraw);
-    const newContent = JSON.stringify(newData, null, 2);
+    const newContent = JSON.stringify(newData);
     log(`Recálculo completado. Nuevo tamaño: ${(newContent.length/1024).toFixed(0)} KB`, 'ok');
 
     // 3. Upload to GitHub
