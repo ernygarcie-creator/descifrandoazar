@@ -1888,6 +1888,8 @@ function initGanaGato(el, data) {
     activeCell: null,
     guia: { rangoKey:null, sumaMin:null, sumaMax:null, patron:null, peso:'any' },
     pool: [],
+    fullPool:   null,  // índices del universo que cumplen los filtros
+    poolOffset: 0,     // posición actual para ciclar bloques de 80
     history: ['gg-v-intent']
   };
 
@@ -2247,26 +2249,76 @@ function initGanaGato(el, data) {
   }
 
   // ── GENERADOR ──────────────────────────────────────────────────────────────
-  function gg_generarCombinaciones() {
+  // Divisores para decodificar índice → tablero (5^7 … 5^0)
+  const GG_DIV = [78125,15625,3125,625,125,25,5,1];
+  function gg_decode(i) {
+    const t=[];
+    for (let p=0;p<8;p++) t.push(Math.floor(i/GG_DIV[p])%5+1);
+    return t;
+  }
+
+  async function gg_generarCombinaciones() {
     const {sumaMin,sumaMax,patron,peso}=GG_STATE.guia;
-    const pool=[]; const MAX=100000, TARGET=80; let tries=0;
-    while (pool.length<TARGET&&tries<MAX) {
-      tries++;
-      const v=Array.from({length:8},()=>Math.floor(Math.random()*5)+1);
-      const s=v.reduce((a,b)=>a+b,0);
-      if (s<sumaMin||s>sumaMax) continue;
-      if (patron&&gg_getPatronKey(v)!==patron) continue;
-      if (peso!=='any') {
-        const diff=(v[0]+v[2]+v[5]+v[7])-(v[1]+v[3]+v[4]+v[6]);
-        if (peso==='esquinas'&&diff<=2) continue;
-        if (peso==='bordes'&&diff>=-2) continue;
-        if (peso==='equilibrado'&&(diff<-2||diff>2)) continue;
+
+    // Mostrar indicador mientras carga el universo
+    const nextBtn=gg_q('gg-s3-next');
+    if (nextBtn) { nextBtn.disabled=true; nextBtn.textContent='⏳ Generando…'; }
+
+    let fullPool=[];
+    try {
+      const U = await loadGGU();
+      // Iterar los 390,625 tableros una sola vez
+      for (let i=0;i<U.n;i++) {
+        if (U.s[i]<sumaMin||U.s[i]>sumaMax) continue;
+        // Filtro de patrón usando los conteos c1-c5 ya precomputados
+        if (patron) {
+          const pKey=[U.c1[i],U.c2[i],U.c3[i],U.c4[i],U.c5[i]]
+            .sort((a,b)=>b-a).filter(v=>v>0).join('+');
+          if (pKey!==patron) continue;
+        }
+        // Filtro de peso: requiere decodificar posiciones
+        if (peso!=='any') {
+          const v=gg_decode(i);
+          const diff=(v[0]+v[2]+v[5]+v[7])-(v[1]+v[3]+v[4]+v[6]);
+          if (peso==='esquinas'&&diff<=2) continue;
+          if (peso==='bordes'&&diff>=-2) continue;
+          if (peso==='equilibrado'&&(diff<-2||diff>2)) continue;
+        }
+        fullPool.push(i); // guardamos el índice, no el array completo
       }
-      pool.push(v);
+      shuffle(fullPool);
+      // Convertir los primeros 80 índices a tableros reales
+      GG_STATE.fullPool   = fullPool;
+      GG_STATE.poolOffset = 0;
+      const pool = fullPool.slice(0,80).map(gg_decode);
+      GG_STATE.pool=pool;
+      if (nextBtn) { nextBtn.disabled=false; nextBtn.textContent='Generar combinaciones →'; }
+      gg_renderComboList(pool);
+      gg_goView('gg-v-guia-result');
+    } catch(e) {
+      // Fallback: muestreo aleatorio si el archivo no carga
+      console.warn('gana_gato_universo.json no disponible, usando muestreo aleatorio:', e);
+      const pool=[]; const MAX=100000, TARGET=80; let tries=0;
+      while (pool.length<TARGET&&tries<MAX) {
+        tries++;
+        const v=Array.from({length:8},()=>Math.floor(Math.random()*5)+1);
+        const s=v.reduce((a,b)=>a+b,0);
+        if (s<sumaMin||s>sumaMax) continue;
+        if (patron&&gg_getPatronKey(v)!==patron) continue;
+        if (peso!=='any') {
+          const diff=(v[0]+v[2]+v[5]+v[7])-(v[1]+v[3]+v[4]+v[6]);
+          if (peso==='esquinas'&&diff<=2) continue;
+          if (peso==='bordes'&&diff>=-2) continue;
+          if (peso==='equilibrado'&&(diff<-2||diff>2)) continue;
+        }
+        pool.push(v);
+      }
+      GG_STATE.fullPool=null;
+      GG_STATE.pool=pool;
+      if (nextBtn) { nextBtn.disabled=false; nextBtn.textContent='Generar combinaciones →'; }
+      gg_renderComboList(pool);
+      gg_goView('gg-v-guia-result');
     }
-    GG_STATE.pool=pool;
-    gg_renderComboList(pool);
-    gg_goView('gg-v-guia-result');
   }
 
   function gg_renderComboList(pool) {
@@ -2327,7 +2379,20 @@ function initGanaGato(el, data) {
     otrasBtn.onclick=()=>{
       const idx=GG_STATE.history.lastIndexOf('gg-v-guia-result');
       if (idx>-1) GG_STATE.history.splice(idx,1);
-      gg_generarCombinaciones();
+      if (GG_STATE.fullPool && GG_STATE.fullPool.length > 0) {
+        // Avanzar al siguiente bloque de 80 del universo ya filtrado
+        GG_STATE.poolOffset = (GG_STATE.poolOffset || 0) + 80;
+        if (GG_STATE.poolOffset >= GG_STATE.fullPool.length) {
+          shuffle(GG_STATE.fullPool);
+          GG_STATE.poolOffset = 0;
+        }
+        const pool = GG_STATE.fullPool.slice(GG_STATE.poolOffset, GG_STATE.poolOffset + 80).map(gg_decode);
+        GG_STATE.pool = pool;
+        gg_renderComboList(pool);
+        gg_goView('gg-v-guia-result');
+      } else {
+        gg_generarCombinaciones(); // fallback si no hay universo cargado
+      }
     };
     listEl.appendChild(otrasBtn);
   }
@@ -2360,6 +2425,25 @@ function initGanaGato(el, data) {
 
 // ══════════ CHIS_DATA ══════════
 let CHIS_DATA = null;
+let CHIS_U    = null;   // cache de chispazo_universo.json
+
+// ══════════ GG_U (caché universo) ══════════
+// GG_DATA ya declarado arriba. Aquí el caché del universo precomputado.
+let GG_U = null;
+
+// Carga perezosa de los archivos de universo (se cachean en memoria)
+async function loadChisU() {
+  if (CHIS_U) return CHIS_U;
+  const r = await fetch('data/chispazo_universo.json');
+  CHIS_U = await r.json();
+  return CHIS_U;
+}
+async function loadGGU() {
+  if (GG_U) return GG_U;
+  const r = await fetch('data/gana_gato_universo.json');
+  GG_U = await r.json();
+  return GG_U;
+}
 
 /**
  * descifrandoazar.mx — Módulo Chispazo
@@ -2377,12 +2461,14 @@ function initChispazo(el, data) {
 
   /* ── Estado ─────────────────────────────────────────────────────────────── */
   const CHIS_STATE = {
-    zona:     null,
-    subzona:  null,
-    forma:    null,
-    paridad:  null,
-    pool:     [],
-    pag:      0,
+    zona:       null,
+    subzona:    null,
+    forma:      null,
+    paridad:    null,
+    pool:       [],
+    fullPool:   null,  // todas las combos que cumplen los filtros (del universo)
+    poolOffset: 0,     // posición actual para ciclar bloques de 200
+    pag:        0,
   };
 
   const CHIS_PPG    = 20;
@@ -2744,7 +2830,7 @@ function initChispazo(el, data) {
   }
   function chis_genReset() {
     CHIS_STATE.zona = CHIS_STATE.subzona = CHIS_STATE.forma = CHIS_STATE.paridad = null;
-    CHIS_STATE.pool = []; CHIS_STATE.pag = 0;
+    CHIS_STATE.pool = []; CHIS_STATE.fullPool = null; CHIS_STATE.poolOffset = 0; CHIS_STATE.pag = 0;
     chis_goStep('chis-gs-a');
     chis_renderA();
   }
@@ -2968,33 +3054,59 @@ function initChispazo(el, data) {
   }
 
   /* ── Generador: paso 5 (Pool + grid) ───────────────────────────────────── */
-  function chis_generarPool() {
+  async function chis_generarPool() {
     const sub  = CHIS_GDAT.zonas[CHIS_STATE.zona].sub_zonas[CHIS_STATE.subzona];
     const [lo, hi] = sub.rango;
     const pts  = CHIS_STATE.paridad.split('-');
     const nPar = parseInt(pts[1]);
-    const pool = []; const seen = new Set();
-    const MAX  = 15000; let intentos = 0;
-    while (pool.length < 200 && intentos < MAX) {
-      intentos++;
-      const c = chis_genCombo(lo, hi, CHIS_STATE.forma, nPar);
-      if (!c) continue;
-      const k = chis_ckey(c);
-      if (CHIS_ADAT.historico_index[k]) continue;
-      if (seen.has(k)) continue;
-      seen.add(k); pool.push(c);
+    const formaTarget = CHIS_STATE.forma;
+
+    // Mostrar indicador de carga mientras llega el universo
+    const btnGen = chis_$('chis-d-info').querySelector('.chis-btn');
+    if (btnGen) { btnGen.disabled = true; btnGen.textContent = '⏳ Cargando universo…'; }
+
+    let fullPool = [];
+    try {
+      const U = await loadChisU();
+      // Iterar las 98,280 combinaciones una sola vez y filtrar
+      for (let i = 0; i < U.n; i++) {
+        if (U.s[i] < lo || U.s[i] > hi) continue;
+        if (U.pp[i] !== nPar) continue;
+        const fKey = [U.f1[i],U.f2[i],U.f3[i],U.f4[i]].filter(v=>v>0).sort((a,b)=>b-a).join('+');
+        if (fKey !== formaTarget) continue;
+        const combo = [U.n1[i],U.n2[i],U.n3[i],U.n4[i],U.n5[i]];
+        if (CHIS_ADAT.historico_index[chis_ckey(combo)]) continue;
+        fullPool.push(combo);
+      }
+      shuffle(fullPool);
+    } catch(e) {
+      // Fallback: muestreo aleatorio si el archivo no carga
+      console.warn('chispazo_universo.json no disponible, usando muestreo aleatorio:', e);
+      const seen = new Set();
+      const MAX = 15000; let intentos = 0;
+      while (fullPool.length < 200 && intentos < MAX) {
+        intentos++;
+        const c = chis_genCombo(lo, hi, formaTarget, nPar);
+        if (!c) continue;
+        const k = chis_ckey(c);
+        if (CHIS_ADAT.historico_index[k] || seen.has(k)) continue;
+        seen.add(k); fullPool.push(c);
+      }
+      shuffle(fullPool);
     }
-    for (let i = pool.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i+1));
-      [pool[i], pool[j]] = [pool[j], pool[i]];
-    }
-    CHIS_STATE.pool = pool; CHIS_STATE.pag = 0;
+
+    // Guardar el pool completo para ciclarlo en regen
+    CHIS_STATE.fullPool   = fullPool;
+    CHIS_STATE.poolOffset = 0;
+    CHIS_STATE.pool       = fullPool.slice(0, 200);
+    CHIS_STATE.pag        = 0;
+
     chis_$('chis-d-info').innerHTML += `<br><br><div class="chis-dbox" style="background:#EAF3DE;border-color:#C0DD97;color:#3B6D11">
-      Generadas <strong>${pool.length}</strong> combinaciones que cumplen tus criterios. ¡Ninguna ha salido jamás!
+      <strong>${fullPool.length.toLocaleString('es-MX')}</strong> combinaciones encontradas que cumplen tus criterios. ¡Ninguna ha salido jamás!
     </div>`;
     const btn = chis_$('chis-d-info').querySelector('.chis-btn');
-    btn.textContent = 'Ver combinaciones →';
-    btn.onclick = () => { chis_goStep('chis-gs-e'); chis_renderE(); };
+    if (btn) { btn.disabled = false; btn.textContent = 'Ver combinaciones →';
+      btn.onclick = () => { chis_goStep('chis-gs-e'); chis_renderE(); }; }
   }
 
   function chis_genCombo(lo, hi, forma, nPar) {
@@ -3060,25 +3172,18 @@ function initChispazo(el, data) {
   function chis_camPag(d) { CHIS_STATE.pag += d; chis_renderE(); }
 
   function chis_regenPool() {
-    const sub  = CHIS_GDAT.zonas[CHIS_STATE.zona].sub_zonas[CHIS_STATE.subzona];
-    const [lo, hi] = sub.rango;
-    const pts  = CHIS_STATE.paridad.split('-');
-    const nPar = parseInt(pts[1]);
-    const pool = []; const seen = new Set(CHIS_STATE.pool.map(c => chis_ckey(c)));
-    const MAX  = 15000; let intentos = 0;
-    while (pool.length < 200 && intentos < MAX) {
-      intentos++;
-      const c = chis_genCombo(lo, hi, CHIS_STATE.forma, nPar);
-      if (!c) continue;
-      const k = chis_ckey(c);
-      if (CHIS_ADAT.historico_index[k]) continue;
-      if (seen.has(k)) continue;
-      seen.add(k); pool.push(c);
+    if (CHIS_STATE.fullPool && CHIS_STATE.fullPool.length > 0) {
+      // Avanzar al siguiente bloque de 200 dentro del pool completo
+      CHIS_STATE.poolOffset = (CHIS_STATE.poolOffset || 0) + 200;
+      if (CHIS_STATE.poolOffset >= CHIS_STATE.fullPool.length) {
+        // Agotamos el pool: re-mezclar y empezar de nuevo
+        shuffle(CHIS_STATE.fullPool);
+        CHIS_STATE.poolOffset = 0;
+      }
+      CHIS_STATE.pool = CHIS_STATE.fullPool.slice(CHIS_STATE.poolOffset, CHIS_STATE.poolOffset + 200);
+      CHIS_STATE.pag = 0;
+      chis_renderE();
     }
-    for (let i = pool.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i+1)); [pool[i], pool[j]] = [pool[j], pool[i]];
-    }
-    CHIS_STATE.pool = pool; CHIS_STATE.pag = 0; chis_renderE();
   }
 
   function chis_elegirPorMi() {
