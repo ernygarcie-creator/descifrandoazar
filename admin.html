@@ -462,6 +462,17 @@ function recalcTris(data, draw) {
   const fecha = draw.fecha;
   const d = JSON.parse(JSON.stringify(data)); // deep clone
 
+  // ── Protección contra sorteos duplicados o fuera de orden ──
+  if (d.last_concurso && draw.concurso <= d.last_concurso) {
+    throw new Error(
+      `El sorteo ${draw.concurso} ya fue registrado o es anterior al último procesado ` +
+      `(concurso ${d.last_concurso} del ${d.last_fecha || '?'}). ` +
+      `Si necesitas corregir un dato, primero rebobina manualmente el JSON.`
+    );
+  }
+  d.last_concurso = draw.concurso;
+  d.last_fecha = fecha;
+
   // Update each modality
   const mods = [
     { key:'num_inicial', extract: r => r[0],    dig:1 },
@@ -486,20 +497,30 @@ function recalcTris(data, draw) {
     if (dig <= 3) {
       const pd = m.par_data;
       // Update the specific combo's stats
+      // m.n ya fue incrementado arriba. Úsalo como número de sorteo 1-based.
+      const sorteoN = m.n; // sorteo actual (1-based: primer sorteo = 1)
+
       if (pd[combo]) {
         const entry = pd[combo];
         const old_rezago = entry.rezago_real;
         entry.veces_total += 1;
         entry.rezago_real = 0;
         entry.ultima_fecha = fecha;
-        entry.ult100 = (entry.ult100||0) + 1;
-        entry.ult200 = (entry.ult200||0) + 1;
-        entry.ult300 = (entry.ult300||0) + 1;
-        entry.ult500 = (entry.ult500||0) + 1;
-        entry.ult1000 = (entry.ult1000||0) + 1;
+
+        // ── Ventanas deslizantes correctas ──────────────────────────────────────
+        // hist_n almacena los últimos 1000 números de sorteo (1-based) donde apareció
+        // esta combinación. Permite calcular ult100/200/300/500/1000 exactos.
+        if (!entry.hist_n) entry.hist_n = [];
+        entry.hist_n = [sorteoN, ...entry.hist_n].slice(0, 1000);
+        entry.ult100  = entry.hist_n.filter(n => n >= sorteoN - 99).length;
+        entry.ult200  = entry.hist_n.filter(n => n >= sorteoN - 199).length;
+        entry.ult300  = entry.hist_n.filter(n => n >= sorteoN - 299).length;
+        entry.ult500  = entry.hist_n.filter(n => n >= sorteoN - 499).length;
+        entry.ult1000 = entry.hist_n.filter(n => n >= sorteoN - 999).length;
+        // ────────────────────────────────────────────────────────────────────────
+
         // Recalculate interval
         if (old_rezago > 0) {
-          const intervals = [old_rezago]; // simplified
           entry.intervalo_prom = Math.round((entry.intervalo_prom * (entry.veces_total-1) + old_rezago) / entry.veces_total * 10) / 10;
           entry.intervalo_min = Math.min(entry.intervalo_min, old_rezago);
           entry.intervalo_max = Math.max(entry.intervalo_max, old_rezago);
@@ -509,7 +530,6 @@ function recalcTris(data, draw) {
       Object.keys(pd).forEach(k => {
         if (k !== combo) {
           pd[k].rezago_real += 1;
-          // Shift ult100/200/300 windows (decrement since 1 more sorteo passed)
         }
       });
       // Rebuild top_retraso
@@ -876,6 +896,14 @@ async function runUpdate(confirmedDraw) {
     const { sha, content } = await getFileSha(cfg.file);
     const currentData = JSON.parse(content);
     log(`Datos actuales cargados (${(content.length/1024).toFixed(0)} KB)`, 'ok');
+
+    // ── Mostrar último concurso registrado ──────────────────────────────────
+    if (currentGame === 'tris' && currentData.last_concurso) {
+      log(`Último sorteo registrado: concurso ${currentData.last_concurso} del ${currentData.last_fecha || '?'}`, 'info');
+      if (confirmedDraw.concurso <= currentData.last_concurso) {
+        log(`⚠ AVISO: estás intentando registrar el concurso ${confirmedDraw.concurso} pero el último ya procesado es ${currentData.last_concurso}`, 'warn');
+      }
+    }
 
     // 2. Recalculate
     log('Recalculando estadísticas...', 'info');
