@@ -1328,9 +1328,32 @@ function showDir5Step2(container,zone,smart){
   });
   el.appendChild(pillRow);
   const showBtn=mk('button','gbtn'); showBtn.textContent='Mostrar combinaciones →'; showBtn.style.cssText+='width:100%;padding:.6rem;font-size:.88rem';
-  showBtn.onclick=()=>{
-    let pool=selPar?basePool.filter(p=>{const par=[...p].filter(d=>parseInt(d)%2===0).length;return`${par}P/${5-par}I`===selPar;}):basePool.slice();
-    showDir5ChipList(el,shuffle(pool),zone,selPar,smart);
+  showBtn.onclick=async ()=>{
+    showBtn.disabled=true; showBtn.textContent='⏳ Preparando…';
+    try {
+      const U = await loadTrisU();
+      const appeared = (typeof ALL !== 'undefined' && ALL?.dir5?.idx) ? ALL.dir5.idx : {};
+      const nPar = selPar ? parseInt(selPar) : null; // número de dígitos pares del selPar "2P/3I"
+      // Agrupar por primer dígito (d0 = U.ni[i])
+      const groups = Array.from({length:10}, ()=>[]);
+      for (let i=0; i<U.n; i++) {
+        if (U.s5[i]<zone.min || U.s5[i]>zone.max) continue;
+        if (nPar !== null && U.pp5[i] !== nPar) continue;
+        if (appeared[String(i).padStart(5,'0')]) continue; // ya salió
+        groups[U.ni[i]].push(i);
+      }
+      DIR5_GROUPS = groups;
+      const pool = buildDir5StratPool(groups, 20); // 20 por dígito = hasta 200
+      showBtn.disabled=false; showBtn.textContent='Mostrar combinaciones →';
+      showDir5ChipList(el, pool, zone, selPar, smart);
+    } catch(e) {
+      // Fallback al smart_pool si el universo no carga
+      console.warn('tris_universo.json no disponible:', e);
+      let pool=selPar?basePool.filter(p=>{const par=[...p].filter(d=>parseInt(d)%2===0).length;return`${par}P/${5-par}I`===selPar;}):basePool.slice();
+      showBtn.disabled=false; showBtn.textContent='Mostrar combinaciones →';
+      DIR5_GROUPS = null;
+      showDir5ChipList(el, shuffle(pool), zone, selPar, smart);
+    }
   };
   el.appendChild(showBtn);
 }
@@ -1346,15 +1369,17 @@ function showDir5ChipList(container,pool,zone,parFilter,smart){
   const shown=pool.slice(0,200);
   el.appendChild(buildChipGrid(shown,'','',5,(p)=>showDetail(p,5,()=>showDir5ChipList(el,pool,zone,parFilter,smart)),20));
   const row2=mk('div'); row2.style.cssText='display:flex;gap:.45rem;margin-top:.5rem;flex-wrap:wrap';
-  if(pool.length>200){
+  // Mostrar "Generar otras 200" siempre que haya grupos (universo cargado) o pool grande
+  const canRegen = DIR5_GROUPS || pool.length > 200;
+  if(canRegen){
     const moreBtn=mk('button','gbtn'); moreBtn.style.cssText='background:var(--surf2);color:var(--text);font-size:.78rem;padding:.42rem .8rem';
     moreBtn.textContent='Generar otras 200 →';
-    moreBtn.onclick=()=>{shuffle(pool);const chunk=pool.slice(0,200);
-      el.innerHTML='';
-      const b=mk('button','back-opt');b.textContent='Atrás';b.onclick=()=>showDir5Step2(el,zone,smart);el.appendChild(b);
-      el.appendChild(info.cloneNode(true));
-      el.appendChild(buildChipGrid(chunk,'','',5,(p)=>showDetail(p,5,()=>showDir5ChipList(el,pool,zone,parFilter,smart)),20));
-      el.appendChild(row2);};
+    moreBtn.onclick=()=>{
+      const newPool = DIR5_GROUPS
+        ? buildDir5StratPool(DIR5_GROUPS, 20)
+        : (shuffle(pool), pool.slice(0,200));
+      showDir5ChipList(el, newPool, zone, parFilter, smart);
+    };
     row2.appendChild(moreBtn);
   }
   const pickBtn=mk('button','gbtn'); pickBtn.style.cssText+='background:var(--tris-d);flex:1;padding:.48rem';
@@ -2444,6 +2469,25 @@ async function loadGGU() {
   GG_U = await r.json();
   return GG_U;
 }
+let TRIS_U = null;
+async function loadTrisU() {
+  if (TRIS_U) return TRIS_U;
+  const r = await fetch('data/tris_universo.json');
+  TRIS_U = await r.json();
+  return TRIS_U;
+}
+// Construye un pool estratificado: PER_DIGIT combos por cada primer dígito (0-9)
+// groups = array de 10 arrays de índices (uno por dígito inicial)
+// Devuelve un array de strings "00000"-"99999" mezclado
+function buildDir5StratPool(groups, perDigit) {
+  const pool = [];
+  groups.forEach(g => {
+    shuffle(g);
+    g.slice(0, perDigit).forEach(idx => pool.push(String(idx).padStart(5,'0')));
+  });
+  return shuffle(pool);
+}
+let DIR5_GROUPS = null; // se rellena al generar; usado por "Generar otras 200"
 
 /**
  * descifrandoazar.mx — Módulo Chispazo
@@ -3888,14 +3932,23 @@ function initMelateRetro(el, data) {
       Forma <strong>${MELR_STATE.forma}</strong>: ${melr_fmtM(fi.cnt_universo)} combinaciones.
       Elige la paridad — cuántos impares (I) y pares (P) de los 6 números.
     </div>`;
-    const total = Object.values(fp).reduce((a,b) => a + (b.cnt_universo || 0), 0) || 1;
+    // Garantizar las 7 opciones (0i-6p … 6i-0p) aunque no estén en los datos del JSON
+    const allFp = {};
+    for (let imp = 0; imp <= MELR_K; imp++) {
+      const key = `${imp}i-${MELR_K - imp}p`;
+      allFp[key] = fp[key] || { cnt_universo: 0, cnt_hist: 0 };
+    }
+    const total = Object.values(allFp).reduce((a,b) => a + (b.cnt_universo || 0), 0) || 1;
     let html = '';
-    Object.entries(fp).sort((a,b) => (b[1].cnt_universo||0) - (a[1].cnt_universo||0)).forEach(([p, info]) => {
+    Object.entries(allFp).sort((a,b) => (b[1].cnt_universo||0) - (a[1].cnt_universo||0)).forEach(([p, info]) => {
       const pct = Math.round((info.cnt_universo || 0) / total * 100);
       const sel = MELR_STATE.paridad === p;
+      const sinDatos = info.cnt_universo === 0;
       html += `<div class="melr-opt${sel ? ' melr-sel' : ''}" onclick="melr_selPar('${p}',this)">
         <div class="melr-oname">${p}</div>
-        <div class="melr-ometa">${melr_fmtM(info.cnt_universo)} combinaciones (${pct}% de la forma) · ${info.cnt_hist} sorteos históricos</div>
+        <div class="melr-ometa">${sinDatos
+          ? 'Combinación posible · datos estadísticos no disponibles aún'
+          : `${melr_fmtM(info.cnt_universo)} combinaciones (${pct}% de la forma) · ${info.cnt_hist} sorteos históricos`}</div>
       </div>`;
     });
     melr_$('melr-c-opts').innerHTML = html || '<p style="color:var(--g500)">Sin opciones.</p>';
