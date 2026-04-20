@@ -108,6 +108,7 @@ a{color:var(--accent);text-decoration:none}
   .token-input{width:100%}
   .token-wrap{flex-direction:column;align-items:flex-start}
 }
+#batch-input:focus{border-color:var(--accent)}
 </style>
 </head>
 <body>
@@ -145,7 +146,12 @@ a{color:var(--accent);text-decoration:none}
 
   <!-- SORTEO FORM -->
   <div class="card" id="form-card">
-    <div class="card-title" id="form-title">Nuevo resultado — TRIS</div>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.65rem">
+      <div class="card-title" id="form-title" style="margin-bottom:0">Nuevo resultado — TRIS</div>
+      <button class="btn btn-ghost" id="btn-toggle-batch" style="font-size:.73rem;padding:.28rem .7rem;display:none">
+        ≡ Carga masiva
+      </button>
+    </div>
     <div class="grid2">
       <div class="field">
         <label>Fecha del sorteo</label>
@@ -165,9 +171,37 @@ a{color:var(--accent);text-decoration:none}
     </div>
   </div>
 
+  <!-- CARGA MASIVA (Tris) -->
+  <div class="card" id="batch-card" style="display:none">
+    <div class="card-title">Carga masiva de sorteos — TRIS</div>
+    <p style="font-size:.8rem;color:var(--muted);margin-bottom:.5rem">
+      Ingresa múltiples sorteos en orden cronológico. Formato por línea:
+      <code style="background:var(--surf2);padding:.1rem .35rem;border-radius:3px;font-size:.75rem">fecha,concurso,resultado</code>
+    </p>
+    <p style="font-size:.73rem;color:var(--muted2);margin-bottom:.75rem">
+      Ejemplo: <code>2025-04-13,35760,14523</code>
+    </p>
+    <textarea id="batch-input"
+      placeholder="2025-04-13,35760,14523&#10;2025-04-13,35761,98765&#10;2025-04-14,35762,11223"
+      style="width:100%;background:var(--surf2);border:1px solid var(--border2);border-radius:var(--rsm);
+             color:var(--text);font-family:var(--mono);font-size:.78rem;padding:.6rem .8rem;outline:none;
+             resize:vertical;min-height:160px;line-height:1.8;transition:border-color .15s"
+      oninput="updateBatchBtnState()"></textarea>
+    <div style="font-size:.72rem;color:var(--muted2);margin-top:.35rem" id="batch-info"></div>
+    <div class="btn-row" style="margin-top:.85rem">
+      <button class="btn btn-primary" id="btn-batch" disabled>↑ Procesar lote y subir a GitHub</button>
+      <button class="btn btn-ghost" id="btn-batch-validate">Validar sin subir</button>
+    </div>
+  </div>
+
   <!-- PROGRESS + LOG -->
   <div class="card" id="log-card">
-    <div class="card-title">Registro de operaciones</div>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.65rem">
+      <div class="card-title" style="margin-bottom:0">Registro de operaciones</div>
+      <button class="btn btn-ghost" id="btn-check-status" style="font-size:.73rem;padding:.28rem .7rem" disabled>
+        🔍 Verificar estado de datos
+      </button>
+    </div>
     <div class="progress-wrap" id="progress-wrap">
       <div class="progress-label" id="progress-label">Procesando...</div>
       <div class="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
@@ -250,6 +284,16 @@ function updateBtnState() {
   const hasFecha = $('f-fecha').value;
   const hasConcurso = $('f-concurso').value;
   $('btn-update').disabled = !(hasToken && hasFecha && hasConcurso);
+  $('btn-check-status').disabled = !hasToken;
+  updateBatchBtnState();
+}
+function updateBatchBtnState() {
+  const hasToken = getToken().length > 10;
+  const lines = ($('batch-input')?.value||'').trim().split('\n').filter(l=>l.trim()).length;
+  if ($('btn-batch')) $('btn-batch').disabled = !(hasToken && lines > 0);
+  if ($('batch-info')) {
+    $('batch-info').textContent = lines > 0 ? `${lines} sorteo${lines>1?'s':''} detectado${lines>1?'s':''}` : '';
+  }
 }
 ['f-fecha','f-concurso'].forEach(id => {
   $(id)?.addEventListener('input', updateBtnState);
@@ -263,7 +307,11 @@ document.querySelectorAll('.game-pill').forEach(pill => {
     document.querySelectorAll('.game-pill').forEach(p => p.classList.remove('active'));
     pill.classList.add('active');
     currentGame = pill.dataset.game;
+    // Reset batch mode when switching games
+    if (batchMode) toggleBatchMode(false);
     renderForm();
+    // Only show batch toggle for Tris
+    $('btn-toggle-batch').style.display = (currentGame === 'tris') ? 'inline-flex' : 'none';
   });
 });
 
@@ -988,11 +1036,153 @@ $('btn-preview').addEventListener('click', () => {
 });
 
 // ═══════════════════════════════════════════════════════
+// VERIFICAR ESTADO DE DATOS
+// ═══════════════════════════════════════════════════════
+$('btn-check-status').addEventListener('click', async () => {
+  if (!getToken()) { log('Token requerido', 'warn'); return; }
+  $('btn-check-status').disabled = true;
+  log('─── Verificando estado de todos los juegos ───', 'info');
+  for (const [game, cfg] of Object.entries(GAME_CFG)) {
+    try {
+      const { content } = await getFileSha(cfg.file);
+      const data = JSON.parse(content);
+      let lastInfo = 'desconocido';
+      if (game === 'tris') {
+        if (data.last_concurso) {
+          lastInfo = `concurso ${data.last_concurso} del ${data.last_fecha || '?'}`;
+        } else {
+          const uf = data.dir5?.ultima_fecha || data.num_final?.ultima_fecha || '?';
+          lastInfo = `última fecha en datos: ${uf} (sin campo last_concurso — ingresa 1 sorteo para establecerlo)`;
+        }
+      } else if (game === 'melate') {
+        const e = data.historico?.melate?.historico?.[0];
+        lastInfo = e ? `concurso ${e.concurso} del ${e.fecha}` : '?';
+      } else if (game === 'melate-retro' || game === 'chispazo') {
+        const e = data.adat?.historico?.[0];
+        lastInfo = e ? `concurso ${e.concurso} del ${e.fecha}` : '?';
+      } else if (game === 'gana-gato') {
+        const e = data.ultimos?.[0];
+        lastInfo = e ? `concurso ${e.concurso} del ${e.fecha}` : '?';
+      }
+      log(`[${cfg.label}] Último dato: ${lastInfo}`, 'ok');
+    } catch(e) {
+      log(`[${cfg.label}] Error al consultar: ${e.message}`, 'err');
+    }
+  }
+  log('─── Verificación completa ───', 'info');
+  $('btn-check-status').disabled = false;
+});
+
+// ═══════════════════════════════════════════════════════
+// MODO CARGA MASIVA (BATCH)
+// ═══════════════════════════════════════════════════════
+let batchMode = false;
+
+function toggleBatchMode(force) {
+  batchMode = (force !== undefined) ? force : !batchMode;
+  $('batch-card').style.display = batchMode ? 'block' : 'none';
+  // En modo lote, escondemos los campos del formulario individual
+  const formFields = $('form-card').querySelectorAll('.grid2, #dynamic-fields, .btn-row');
+  formFields.forEach(el => { el.style.display = batchMode ? 'none' : ''; });
+  $('btn-toggle-batch').textContent = batchMode ? '✕ Volver a un sorteo' : '≡ Carga masiva';
+  updateBatchBtnState();
+}
+
+$('btn-toggle-batch').addEventListener('click', () => toggleBatchMode());
+
+function parseBatchLines(text) {
+  const lines = text.trim().split('\n').map(l => l.trim()).filter(Boolean);
+  const draws = [];
+  const errors = [];
+  lines.forEach((line, i) => {
+    const parts = line.split(',').map(s => s.trim());
+    if (parts.length < 3) { errors.push(`Línea ${i+1}: formato incorrecto ("${line}")`); return; }
+    const [fecha, concurso, resultado] = parts;
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(fecha)) { errors.push(`Línea ${i+1}: fecha inválida "${fecha}"`); return; }
+    const c = parseInt(concurso);
+    if (isNaN(c) || c <= 0) { errors.push(`Línea ${i+1}: concurso inválido "${concurso}"`); return; }
+    const r = resultado.replace(/\D/g,'');
+    if (r.length !== 5) { errors.push(`Línea ${i+1}: resultado "${resultado}" debe tener 5 dígitos`); return; }
+    draws.push({ fecha, concurso: c, resultado: r });
+  });
+  return { draws, errors };
+}
+
+$('btn-batch-validate').addEventListener('click', () => {
+  const { draws, errors } = parseBatchLines($('batch-input').value);
+  if (errors.length) {
+    errors.forEach(e => log(`⚠ ${e}`, 'warn'));
+  } else {
+    log(`✓ ${draws.length} sorteos válidos. Rango: ${draws[0]?.concurso} → ${draws[draws.length-1]?.concurso}`, 'ok');
+    draws.forEach(d => log(`  · ${d.concurso} (${d.fecha}): ${d.resultado}`, 'info'));
+  }
+});
+
+$('btn-batch').addEventListener('click', async () => {
+  const { draws, errors } = parseBatchLines($('batch-input').value);
+  if (errors.length) {
+    errors.forEach(e => log(`Error: ${e}`, 'err'));
+    return;
+  }
+  if (!draws.length) { log('No hay sorteos para procesar', 'warn'); return; }
+
+  // Ordenar por concurso
+  draws.sort((a,b) => a.concurso - b.concurso);
+  log(`─── Lote: ${draws.length} sorteos (${draws[0].concurso} → ${draws[draws.length-1].concurso}) ───`, 'info');
+
+  $('btn-batch').disabled = true;
+  try {
+    // 1. Descargar JSON actual
+    log('Descargando tris.json desde GitHub...', 'info');
+    setProgress(5, 'Descargando datos actuales...');
+    const { sha, content } = await getFileSha('data/tris.json');
+    let currentData = JSON.parse(content);
+    const prevLast = currentData.last_concurso || '(sin registro)';
+    log(`Datos cargados. Último concurso registrado: ${prevLast}`, 'ok');
+
+    // 2. Procesar cada sorteo
+    let processed = 0, skipped = 0;
+    for (let i = 0; i < draws.length; i++) {
+      const draw = draws[i];
+      const pct = 5 + ((i + 1) / draws.length) * 70;
+      setProgress(pct, `Procesando ${i+1}/${draws.length}: concurso ${draw.concurso}...`);
+      try {
+        currentData = recalcTris(currentData, draw);
+        log(`✓ ${draw.concurso} (${draw.fecha}): ${draw.resultado}`, 'ok');
+        processed++;
+      } catch(e) {
+        log(`⚠ Concurso ${draw.concurso} omitido: ${e.message}`, 'warn');
+        skipped++;
+      }
+    }
+
+    // 3. Subir resultado final
+    const newContent = JSON.stringify(currentData);
+    log(`Subiendo resultado final (${(newContent.length/1024).toFixed(0)} KB)...`, 'info');
+    setProgress(80, 'Subiendo a GitHub...');
+    const commitMsg = `[admin] TRIS lote: ${processed} sorteos ${draws[0].concurso}–${draws[draws.length-1].concurso}`;
+    await updateFile('data/tris.json', newContent, sha, commitMsg);
+    setProgress(100, '¡Lote completado!');
+    log(`✓ tris.json actualizado. Procesados: ${processed}, omitidos: ${skipped}`, 'ok');
+    log(`✓ Nuevo último concurso: ${currentData.last_concurso}`, 'ok');
+    log('✓ GitHub Pages se actualizará en 1-2 minutos', 'ok');
+    setTimeout(hideProgress, 3000);
+  } catch(e) {
+    log(`ERROR en lote: ${e.message}`, 'err');
+    hideProgress();
+  } finally {
+    updateBatchBtnState();
+  }
+});
+
+// ═══════════════════════════════════════════════════════
 // INIT
 // ═══════════════════════════════════════════════════════
 renderForm();
 // Set today's date as default
 $('f-fecha').value = new Date().toISOString().split('T')[0];
+// Mostrar botón de carga masiva si Tris está activo al cargar
+$('btn-toggle-batch').style.display = (currentGame === 'tris') ? 'inline-flex' : 'none';
 </script>
 </body>
 </html>
