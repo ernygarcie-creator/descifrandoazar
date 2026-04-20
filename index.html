@@ -474,6 +474,8 @@ let _anaCtrl=null;
 function sp(p){return[...String(p)].reduce((a,c)=>a+parseInt(c),0);}
 function fmt(n){return(n||0).toLocaleString('es-MX');}
 function mk(tag,cls=''){const e=document.createElement(tag);if(cls)e.className=cls;return e;}
+// Fisher-Yates shuffle (in-place, returns array)
+function shuffle(arr){for(let i=arr.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[arr[i],arr[j]]=[arr[j],arr[i]];}return arr;}
 function mkCard(q,hint=''){
   const c=mk('div','card');
   c.innerHTML=`<div class="card-q">${q}</div>${hint?`<div class="card-hint">${hint}</div>`:''}`;
@@ -921,8 +923,8 @@ function showDir3Step2(el,zone){
 
   const showBtn=mk('button','gbtn'); showBtn.textContent='Mostrar combinaciones →'; showBtn.style.cssText+='width:100%;padding:.6rem;font-size:.88rem';
   showBtn.onclick=()=>{
-    let pool=selPar?basePool.filter(p=>{const par=[...p].filter(d=>parseInt(d)%2===0).length;return`${par}P/${3-par}I`===selPar;}):basePool;
-    showDir3ChipList(el,pool,zone,selPar);
+    let pool=selPar?basePool.filter(p=>{const par=[...p].filter(d=>parseInt(d)%2===0).length;return`${par}P/${3-par}I`===selPar;}):basePool.slice();
+    showDir3ChipList(el,shuffle(pool),zone,selPar);
   };
   el.appendChild(showBtn);
 }
@@ -1143,8 +1145,8 @@ function showDir4Step2(container,zone){
   el.appendChild(pillRow);
   const showBtn=mk('button','gbtn'); showBtn.textContent='Mostrar combinaciones →'; showBtn.style.cssText+='width:100%;padding:.6rem;font-size:.88rem';
   showBtn.onclick=()=>{
-    let pool=selPar?allPool.filter(p=>{const par=[...p].filter(d=>parseInt(d)%2===0).length;return`${par}P/${4-par}I`===selPar;}):allPool;
-    showDir4ChipList(el,pool,zone,selPar,never);
+    let pool=selPar?allPool.filter(p=>{const par=[...p].filter(d=>parseInt(d)%2===0).length;return`${par}P/${4-par}I`===selPar;}):allPool.slice();
+    showDir4ChipList(el,shuffle(pool),zone,selPar,never);
   };
   el.appendChild(showBtn);
 }
@@ -1327,8 +1329,8 @@ function showDir5Step2(container,zone,smart){
   el.appendChild(pillRow);
   const showBtn=mk('button','gbtn'); showBtn.textContent='Mostrar combinaciones →'; showBtn.style.cssText+='width:100%;padding:.6rem;font-size:.88rem';
   showBtn.onclick=()=>{
-    let pool=selPar?basePool.filter(p=>{const par=[...p].filter(d=>parseInt(d)%2===0).length;return`${par}P/${5-par}I`===selPar;}):basePool;
-    showDir5ChipList(el,pool,zone,selPar,smart);
+    let pool=selPar?basePool.filter(p=>{const par=[...p].filter(d=>parseInt(d)%2===0).length;return`${par}P/${5-par}I`===selPar;}):basePool.slice();
+    showDir5ChipList(el,shuffle(pool),zone,selPar,smart);
   };
   el.appendChild(showBtn);
 }
@@ -1346,8 +1348,8 @@ function showDir5ChipList(container,pool,zone,parFilter,smart){
   const row2=mk('div'); row2.style.cssText='display:flex;gap:.45rem;margin-top:.5rem;flex-wrap:wrap';
   if(pool.length>200){
     const moreBtn=mk('button','gbtn'); moreBtn.style.cssText='background:var(--surf2);color:var(--text);font-size:.78rem;padding:.42rem .8rem';
-    moreBtn.textContent='Generar otras 200 →'; let offset=0;
-    moreBtn.onclick=()=>{offset=(offset+200)%pool.length;const chunk=pool.slice(offset,offset+200);
+    moreBtn.textContent='Generar otras 200 →';
+    moreBtn.onclick=()=>{shuffle(pool);const chunk=pool.slice(0,200);
       el.innerHTML='';
       const b=mk('button','back-opt');b.textContent='Atrás';b.onclick=()=>showDir5Step2(el,zone,smart);el.appendChild(b);
       el.appendChild(info.cloneNode(true));
