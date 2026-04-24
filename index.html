@@ -1308,13 +1308,17 @@ function showDir5Step2(container,zone,smart){
   const back=mk('button','back-opt'); back.textContent='Atrás';
   back.onclick=()=>showDir5Gen(el); el.appendChild(back);
   const title=mk('div'); title.style.cssText='font-size:1rem;font-weight:500;color:var(--tris);margin:.3rem 0 .75rem';
-  title.textContent='Filtro de paridad'; el.appendChild(title);
+  title.textContent='Filtros'; el.appendChild(title);
   const basePool=smart.filter(p=>sp(p)>=zone.min&&sp(p)<=zone.max);
   const zd=D5COUNTS[zone.k]||{total:0,par:{}};
   const infoEl=mk('div'); infoEl.style.cssText='font-size:.79rem;color:var(--muted);margin-bottom:.65rem;line-height:1.65';
   infoEl.innerHTML=`<b>${zd.total.toLocaleString('es-MX')} combinaciones nunca aparecidas</b> en suma ${zone.min}–${zone.max}.`;
   el.appendChild(infoEl);
-  const pillRow=mk('div'); pillRow.style.cssText='display:flex;gap:.4rem;flex-wrap:wrap;margin-bottom:.7rem';
+
+  // ── Paridad ──────────────────────────────────────────
+  const parLabel=mk('div'); parLabel.style.cssText='font-size:.68rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted2);margin-bottom:.4rem';
+  parLabel.textContent='Paridad'; el.appendChild(parLabel);
+  const pillRow=mk('div'); pillRow.style.cssText='display:flex;gap:.4rem;flex-wrap:wrap;margin-bottom:.85rem';
   let selPar=null;
   const allPill=mk('div','fp-pick sel'); allPill.textContent=`Todas (${zd.total.toLocaleString('es-MX')})`;
   allPill.onclick=()=>{pillRow.querySelectorAll('.fp-pick').forEach(x=>x.classList.remove('sel'));allPill.classList.add('sel');selPar=null;};
@@ -1327,64 +1331,149 @@ function showDir5Step2(container,zone,smart){
     pillRow.appendChild(p);
   });
   el.appendChild(pillRow);
+
+  // ── Condicionales ─────────────────────────────────────
+  const condWrap=mk('div'); condWrap.style.cssText='margin-bottom:.9rem';
+  const condToggle=mk('div'); condToggle.style.cssText='display:flex;align-items:center;gap:.45rem;cursor:pointer;user-select:none;margin-bottom:.0rem';
+  condToggle.innerHTML=`<span style="font-size:.68rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted2)">Condicionales</span><span id="cond-arrow" style="font-size:.72rem;color:var(--muted2);transition:transform .2s">▶</span><span style="font-size:.68rem;color:var(--muted2);opacity:.7">(opcional)</span>`;
+  const condBody=mk('div'); condBody.style.cssText='display:none;margin-top:.6rem;background:var(--surf2);border:1px solid var(--border);border-radius:8px;padding:.7rem .85rem;';
+  condBody.innerHTML=`
+    <div style="font-size:.74rem;color:var(--muted);margin-bottom:.7rem;line-height:1.6">
+      Filtra combinaciones que <b>empiecen</b> o <b>terminen</b> con dígitos específicos.<br>
+      Escribe 1 dígito (0–9) o 2 dígitos (00–99). Deja vacío para no filtrar.
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:.7rem">
+      <div>
+        <div style="font-size:.64rem;color:var(--muted2);margin-bottom:.3rem;text-transform:uppercase;letter-spacing:.06em">Empieza con</div>
+        <input id="cond-prefix" maxlength="2" placeholder="ej. 3 o 14"
+          style="width:100%;background:var(--surf3);border:1px solid var(--border2);border-radius:6px;padding:.42rem .6rem;color:var(--text);font-family:var(--mono);font-size:.95rem;letter-spacing:.12em;outline:none;text-align:center">
+      </div>
+      <div>
+        <div style="font-size:.64rem;color:var(--muted2);margin-bottom:.3rem;text-transform:uppercase;letter-spacing:.06em">Termina con</div>
+        <input id="cond-suffix" maxlength="2" placeholder="ej. 7 o 89"
+          style="width:100%;background:var(--surf3);border:1px solid var(--border2);border-radius:6px;padding:.42rem .6rem;color:var(--text);font-family:var(--mono);font-size:.95rem;letter-spacing:.12em;outline:none;text-align:center">
+      </div>
+    </div>
+    <div id="cond-hint" style="font-size:.7rem;color:var(--muted2);margin-top:.5rem"></div>`;
+  let condOpen=false;
+  condToggle.onclick=()=>{
+    condOpen=!condOpen;
+    condBody.style.display=condOpen?'block':'none';
+    condToggle.querySelector('#cond-arrow').style.transform=condOpen?'rotate(90deg)':'';
+  };
+  // Validate: only digits allowed in cond inputs
+  ['cond-prefix','cond-suffix'].forEach(id=>{
+    condBody.querySelector('#'+id).addEventListener('input',function(){
+      this.value=this.value.replace(/\D/g,'');
+      const pre=condBody.querySelector('#cond-prefix').value;
+      const suf=condBody.querySelector('#cond-suffix').value;
+      const hint=condBody.querySelector('#cond-hint');
+      let txt='';
+      if(pre) txt+=`Empiezan con "${pre}". `;
+      if(suf) txt+=`Terminan con "${suf}". `;
+      hint.textContent=txt;
+    });
+  });
+  condWrap.appendChild(condToggle);
+  condWrap.appendChild(condBody);
+  el.appendChild(condWrap);
+
+  // ── Botón generar ─────────────────────────────────────
   const showBtn=mk('button','gbtn'); showBtn.textContent='Mostrar combinaciones →'; showBtn.style.cssText+='width:100%;padding:.6rem;font-size:.88rem';
   showBtn.onclick=async ()=>{
     showBtn.disabled=true; showBtn.textContent='⏳ Preparando…';
+    // Leer condicionales
+    const prefixVal=condBody.querySelector('#cond-prefix').value.trim();
+    const suffixVal=condBody.querySelector('#cond-suffix').value.trim();
+    const hasCond=prefixVal.length>0||suffixVal.length>0;
+    const conds=hasCond?{prefix:prefixVal,suffix:suffixVal}:null;
     try {
       const U = await loadTrisU();
       const appeared = (typeof ALL !== 'undefined' && ALL?.dir5?.idx) ? ALL.dir5.idx : {};
-      const nPar = selPar ? parseInt(selPar) : null; // número de dígitos pares del selPar "2P/3I"
-      // Agrupar por primer dígito (d0 = U.ni[i])
+      const nPar = selPar ? parseInt(selPar) : null;
       const groups = Array.from({length:10}, ()=>[]);
       for (let i=0; i<U.n; i++) {
         if (U.s5[i]<zone.min || U.s5[i]>zone.max) continue;
         if (nPar !== null && U.pp5[i] !== nPar) continue;
-        if (appeared[String(i).padStart(5,'0')]) continue; // ya salió
+        if (appeared[String(i).padStart(5,'0')]) continue;
+        const cs=String(i).padStart(5,'0');
+        if (prefixVal && !cs.startsWith(prefixVal)) continue;
+        if (suffixVal && !cs.endsWith(suffixVal)) continue;
         groups[U.ni[i]].push(i);
       }
       DIR5_GROUPS = groups;
-      const pool = buildDir5StratPool(groups, 20); // 20 por dígito = hasta 200
+      let pool;
+      if (hasCond) {
+        // Con condicionales: pool plano (el usuario pidió dígitos específicos, sin estratificar)
+        const flat=[];
+        groups.forEach(g=>{g.forEach(idx=>flat.push(String(idx).padStart(5,'0')));});
+        pool=shuffle(flat);
+      } else {
+        pool = buildDir5StratPool(groups, 20); // 20 por dígito = hasta 200
+      }
       showBtn.disabled=false; showBtn.textContent='Mostrar combinaciones →';
-      showDir5ChipList(el, pool, zone, selPar, smart);
+      showDir5ChipList(el, pool, zone, selPar, smart, conds);
     } catch(e) {
-      // Fallback al smart_pool si el universo no carga
       console.warn('tris_universo.json no disponible:', e);
       let pool=selPar?basePool.filter(p=>{const par=[...p].filter(d=>parseInt(d)%2===0).length;return`${par}P/${5-par}I`===selPar;}):basePool.slice();
+      if (prefixVal) pool=pool.filter(p=>p.startsWith(prefixVal));
+      if (suffixVal) pool=pool.filter(p=>p.endsWith(suffixVal));
       showBtn.disabled=false; showBtn.textContent='Mostrar combinaciones →';
       DIR5_GROUPS = null;
-      showDir5ChipList(el, shuffle(pool), zone, selPar, smart);
+      showDir5ChipList(el, shuffle(pool), zone, selPar, smart, conds);
     }
   };
   el.appendChild(showBtn);
 }
 
-function showDir5ChipList(container,pool,zone,parFilter,smart){
+function showDir5ChipList(container,pool,zone,parFilter,smart,conds){
   const el=container; el.innerHTML='';
   const back=mk('button','back-opt'); back.textContent='Atrás';
   back.onclick=()=>showDir5Step2(el,zone,smart); el.appendChild(back);
   const parLabel=parFilter?` · ${parFilter}`:'';
+  // Armar etiqueta de condicionales
+  let condLabel='';
+  if(conds){
+    if(conds.prefix) condLabel+=` · empieza con ${conds.prefix}`;
+    if(conds.suffix) condLabel+=` · termina con ${conds.suffix}`;
+  }
   const info=mk('div'); info.style.cssText='font-size:.79rem;color:var(--muted);margin:.3rem 0 .65rem';
-  info.innerHTML=`<b>${pool.length.toLocaleString('es-MX')}</b> nunca aparecidas · Σ${zone.min}–${zone.max}${parLabel} · mostrando 200`;
+  const shown200=Math.min(pool.length,200);
+  info.innerHTML=`<b>${pool.length.toLocaleString('es-MX')}</b> nunca aparecidas · Σ${zone.min}–${zone.max}${parLabel}${condLabel} · mostrando ${shown200}`;
   el.appendChild(info);
   const shown=pool.slice(0,200);
-  el.appendChild(buildChipGrid(shown,'','',5,(p)=>showDetail(p,5,()=>showDir5ChipList(el,pool,zone,parFilter,smart)),20));
+  el.appendChild(buildChipGrid(shown,'','',5,(p)=>showDetail(p,5,()=>showDir5ChipList(el,pool,zone,parFilter,smart,conds)),20));
   const row2=mk('div'); row2.style.cssText='display:flex;gap:.45rem;margin-top:.5rem;flex-wrap:wrap';
-  // Mostrar "Generar otras 200" siempre que haya grupos (universo cargado) o pool grande
   const canRegen = DIR5_GROUPS || pool.length > 200;
   if(canRegen){
     const moreBtn=mk('button','gbtn'); moreBtn.style.cssText='background:var(--surf2);color:var(--text);font-size:.78rem;padding:.42rem .8rem';
     moreBtn.textContent='Generar otras 200 →';
     moreBtn.onclick=()=>{
-      const newPool = DIR5_GROUPS
-        ? buildDir5StratPool(DIR5_GROUPS, 20)
-        : (shuffle(pool), pool.slice(0,200));
-      showDir5ChipList(el, newPool, zone, parFilter, smart);
+      let newPool;
+      if(DIR5_GROUPS){
+        if(conds){
+          // Con condicionales: pool plano re-mezclado
+          const flat=[];
+          DIR5_GROUPS.forEach(g=>g.forEach(idx=>{
+            const cs=String(idx).padStart(5,'0');
+            if(conds.prefix&&!cs.startsWith(conds.prefix)) return;
+            if(conds.suffix&&!cs.endsWith(conds.suffix)) return;
+            flat.push(cs);
+          }));
+          newPool=shuffle(flat);
+        } else {
+          newPool=buildDir5StratPool(DIR5_GROUPS,20);
+        }
+      } else {
+        newPool=(shuffle(pool),pool.slice(0,200));
+      }
+      showDir5ChipList(el, newPool, zone, parFilter, smart, conds);
     };
     row2.appendChild(moreBtn);
   }
   const pickBtn=mk('button','gbtn'); pickBtn.style.cssText+='background:var(--tris-d);flex:1;padding:.48rem';
   pickBtn.innerHTML='🎲 Elegir por mí';
-  pickBtn.onclick=()=>pickForMeChip(pool,el,(p)=>showDetail(p,5,()=>showDir5ChipList(el,pool,zone,parFilter,smart)),el);
+  pickBtn.onclick=()=>pickForMeChip(pool,el,(p)=>showDetail(p,5,()=>showDir5ChipList(el,pool,zone,parFilter,smart,conds)),el);
   row2.appendChild(pickBtn);
   el.appendChild(row2);
 }
