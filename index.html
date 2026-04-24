@@ -2579,6 +2579,88 @@ function buildDir5StratPool(groups, perDigit) {
 let DIR5_GROUPS = null; // se rellena al generar; usado por "Generar otras 200"
 
 /**
+ * buildCondsPanel — panel de Condicionales reutilizable (Incluir / Excluir números)
+ * @param {object} state       — STATE del juego (tiene .conds = { include:[], exclude:[] })
+ * @param {number} maxNum      — número más alto válido para el juego (28, 39, 56)
+ * @param {string} accentColor — color CSS variable del juego, ej. 'var(--chis)'
+ * @returns {HTMLElement}      — div listo para appendear
+ */
+function buildCondsPanel(state, maxNum, accentColor) {
+  const wrap = mk('div'); wrap.style.cssText = 'margin:1rem 0 .5rem';
+
+  const toggle = mk('div'); toggle.style.cssText = 'display:flex;align-items:center;gap:.45rem;cursor:pointer;user-select:none;padding:.3rem 0';
+  toggle.innerHTML = `<span style="font-size:.7rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted2)">Condicionales</span><span class="bc-arrow" style="font-size:.72rem;color:var(--muted2);transition:transform .2s">▶</span><span style="font-size:.68rem;color:var(--muted2);opacity:.7">(opcional)</span>`;
+
+  const body = mk('div'); body.style.cssText = 'display:none;margin-top:.5rem;background:var(--surf2);border:1px solid var(--border);border-radius:8px;padding:.75rem .9rem';
+
+  function parseNums(str) {
+    return str.split(/[\s,;]+/).map(s => parseInt(s)).filter(n => !isNaN(n) && n >= 1 && n <= maxNum);
+  }
+  function updateHint() {
+    const inc = parseNums(body.querySelector('.bc-inc').value);
+    const exc = parseNums(body.querySelector('.bc-exc').value);
+    state.conds = { include: inc, exclude: exc };
+    const hint = body.querySelector('.bc-hint');
+    let parts = [];
+    if (inc.length) parts.push(`Siempre incluye: <b style="color:${accentColor}">${inc.join(', ')}</b>`);
+    if (exc.length) parts.push(`Siempre excluye: <b>${exc.join(', ')}</b>`);
+    hint.innerHTML = parts.join(' &nbsp;·&nbsp; ') || '';
+    // Warn if include+exclude overlap
+    const overlap = inc.filter(n => exc.includes(n));
+    if (overlap.length) hint.innerHTML += `<br><span style="color:var(--warn)">⚠ ${overlap.join(', ')} está en ambas listas</span>`;
+  }
+
+  body.innerHTML = `
+    <div style="font-size:.75rem;color:var(--muted);margin-bottom:.7rem;line-height:1.6">
+      Escribe los números separados por comas o espacios (rango: 1–${maxNum}).
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:.7rem;margin-bottom:.5rem">
+      <div>
+        <div style="font-size:.63rem;color:var(--muted2);margin-bottom:.28rem;text-transform:uppercase;letter-spacing:.06em">Incluir siempre</div>
+        <input class="bc-inc" type="text" placeholder="ej. 7, 14"
+          style="width:100%;background:var(--surf3);border:1px solid var(--border2);border-radius:6px;padding:.42rem .6rem;color:var(--text);font-family:var(--mono);font-size:.88rem;outline:none">
+      </div>
+      <div>
+        <div style="font-size:.63rem;color:var(--muted2);margin-bottom:.28rem;text-transform:uppercase;letter-spacing:.06em">Excluir siempre</div>
+        <input class="bc-exc" type="text" placeholder="ej. 13, 21"
+          style="width:100%;background:var(--surf3);border:1px solid var(--border2);border-radius:6px;padding:.42rem .6rem;color:var(--text);font-family:var(--mono);font-size:.88rem;outline:none">
+      </div>
+    </div>
+    <div class="bc-hint" style="font-size:.71rem;color:var(--muted);min-height:1.2em"></div>`;
+
+  body.querySelector('.bc-inc').addEventListener('input', updateHint);
+  body.querySelector('.bc-exc').addEventListener('input', updateHint);
+
+  // Pre-fill if state already has conds
+  if (state.conds.include.length) body.querySelector('.bc-inc').value = state.conds.include.join(', ');
+  if (state.conds.exclude.length) body.querySelector('.bc-exc').value = state.conds.exclude.join(', ');
+
+  let open = state.conds.include.length > 0 || state.conds.exclude.length > 0;
+  body.style.display = open ? 'block' : 'none';
+  toggle.querySelector('.bc-arrow').style.transform = open ? 'rotate(90deg)' : '';
+  toggle.onclick = () => {
+    open = !open;
+    body.style.display = open ? 'block' : 'none';
+    toggle.querySelector('.bc-arrow').style.transform = open ? 'rotate(90deg)' : '';
+  };
+
+  wrap.appendChild(toggle);
+  wrap.appendChild(body);
+  return wrap;
+}
+
+/**
+ * applyConds — filtra un combo (array de números) según state.conds
+ * @returns {boolean} true = pasa el filtro, false = descartar
+ */
+function applyConds(combo, conds) {
+  if (!conds) return true;
+  if (conds.include.length && !conds.include.every(n => combo.includes(n))) return false;
+  if (conds.exclude.length && conds.exclude.some(n => combo.includes(n))) return false;
+  return true;
+}
+
+/**
  * descifrandoazar.mx — Módulo Chispazo
  * Uso: initChispazo(containerEl, data)
  *   containerEl  → div donde se monta el juego
@@ -2598,6 +2680,7 @@ function initChispazo(el, data) {
     subzona:    null,
     forma:      null,
     paridad:    null,
+    conds:      { include: [], exclude: [] },  // condicionales: números a incluir/excluir
     pool:       [],
     fullPool:   null,  // todas las combos que cumplen los filtros (del universo)
     poolOffset: 0,     // posición actual para ciclar bloques de 200
@@ -2963,6 +3046,7 @@ function initChispazo(el, data) {
   }
   function chis_genReset() {
     CHIS_STATE.zona = CHIS_STATE.subzona = CHIS_STATE.forma = CHIS_STATE.paridad = null;
+    CHIS_STATE.conds = { include: [], exclude: [] };
     CHIS_STATE.pool = []; CHIS_STATE.fullPool = null; CHIS_STATE.poolOffset = 0; CHIS_STATE.pag = 0;
     chis_goStep('chis-gs-a');
     chis_renderA();
@@ -3177,13 +3261,17 @@ function initChispazo(el, data) {
     const fp   = sub.forma_paridad[CHIS_STATE.forma] || {};
     const pi   = fp[CHIS_STATE.paridad] || { cnt_universo: 0 };
     const desc = CHIS_GDAT.total_universo - pi.cnt_universo;
-    chis_$('chis-d-info').innerHTML = `<div class="chis-dbox" style="margin-bottom:1rem">
+    const dinfo = chis_$('chis-d-info');
+    dinfo.innerHTML = `<div class="chis-dbox" style="margin-bottom:1rem">
       Del universo de <strong>${chis_fmt(CHIS_GDAT.total_universo)}</strong> combinaciones posibles (C(28,5) = 98,280),<br>
       tus filtros eliminaron <strong>${chis_fmt(desc)}</strong> combinaciones.<br>
       Quedan aproximadamente <strong>${chis_fmtM(pi.cnt_universo)}</strong> candidatas.<br>
       <strong style="color:#3B6D11">✓ Primer descarte obligatorio:</strong> excluimos todas las que ya salieron en el histórico. Lo que verás nunca ha salido.
-    </div>
-    <button class="chis-btn chis-btnp" onclick="chis_generarPool()">Generar combinaciones →</button>`;
+    </div>`;
+    dinfo.appendChild(buildCondsPanel(CHIS_STATE, 28, 'var(--chis)'));
+    const btn = mk('button'); btn.className = 'chis-btn chis-btnp'; btn.textContent = 'Generar combinaciones →';
+    btn.onclick = () => chis_generarPool();
+    dinfo.appendChild(btn);
   }
 
   /* ── Generador: paso 5 (Pool + grid) ───────────────────────────────────── */
@@ -3209,6 +3297,7 @@ function initChispazo(el, data) {
         if (fKey !== formaTarget) continue;
         const combo = [U.n1[i],U.n2[i],U.n3[i],U.n4[i],U.n5[i]];
         if (CHIS_ADAT.historico_index[chis_ckey(combo)]) continue;
+        if (!applyConds(combo, CHIS_STATE.conds)) continue;
         fullPool.push(combo);
       }
       shuffle(fullPool);
@@ -3223,6 +3312,7 @@ function initChispazo(el, data) {
         if (!c) continue;
         const k = chis_ckey(c);
         if (CHIS_ADAT.historico_index[k] || seen.has(k)) continue;
+        if (!applyConds(c, CHIS_STATE.conds)) continue;
         seen.add(k); fullPool.push(c);
       }
       shuffle(fullPool);
@@ -3438,6 +3528,7 @@ function initMelateRetro(el, data) {
     subzona: null,
     forma:   null,
     paridad: null,
+    conds:   { include: [], exclude: [] },  // condicionales
     pool:    [],
     pag:     0,
   };
@@ -3805,6 +3896,7 @@ function initMelateRetro(el, data) {
   }
   function melr_genReset() {
     MELR_STATE.zona = MELR_STATE.subzona = MELR_STATE.forma = MELR_STATE.paridad = null;
+    MELR_STATE.conds = { include: [], exclude: [] };
     MELR_STATE.pool = []; MELR_STATE.pag = 0;
     melr_goStep('melr-gs-a');
     melr_renderA();
@@ -4056,13 +4148,17 @@ function initMelateRetro(el, data) {
     const fp   = sub.forma_paridad[MELR_STATE.forma] || {};
     const pi   = fp[MELR_STATE.paridad] || { cnt_universo: 0 };
     const desc = MELR_GDAT.total_universo - pi.cnt_universo;
-    melr_$('melr-d-info').innerHTML = `<div class="melr-dbox" style="margin-bottom:1rem">
+    const dinfo = melr_$('melr-d-info');
+    dinfo.innerHTML = `<div class="melr-dbox" style="margin-bottom:1rem">
       Del universo de <strong>${melr_fmt(MELR_GDAT.total_universo)}</strong> combinaciones posibles (C(39,6) = 3,262,623),<br>
       tus filtros eliminaron <strong>${melr_fmt(desc)}</strong> combinaciones.<br>
       Quedan aproximadamente <strong>${melr_fmtM(pi.cnt_universo)}</strong> candidatas.<br>
       <strong style="color:#3B6D11">✓ Primer descarte obligatorio:</strong> excluimos todas las que ya salieron en el histórico. Lo que verás nunca ha salido.
-    </div>
-    <button class="melr-btn melr-btnp" onclick="melr_generarPool()">Generar combinaciones →</button>`;
+    </div>`;
+    dinfo.appendChild(buildCondsPanel(MELR_STATE, 39, 'var(--mret)'));
+    const btn = mk('button'); btn.className = 'melr-btn melr-btnp'; btn.textContent = 'Generar combinaciones →';
+    btn.onclick = () => melr_generarPool();
+    dinfo.appendChild(btn);
   }
 
   /* ── Generador: paso 5 (Pool + grid) ───────────────────────────────────── */
@@ -4081,6 +4177,7 @@ function initMelateRetro(el, data) {
       const k = melr_ckey(c);
       if (MELR_ADAT.historico_index[k]) continue;
       if (seen.has(k)) continue;
+      if (!applyConds(c, MELR_STATE.conds)) continue;
       seen.add(k); pool.push(c);
     }
     for (let i = pool.length - 1; i > 0; i--) {
@@ -4615,7 +4712,7 @@ const FENT = data.formasEnt;   // mapa forma → apertura
 const MEL_STATE = {
   cj:  'melate',    // juego activo en el analizador
   cjg: 'melate',    // juego activo en el generador
-  GS:  { zona: null, subzona: null, forma: null, paridad: null, pool: [], pag: 0 },
+  GS:  { zona: null, subzona: null, forma: null, paridad: null, conds: { include: [], exclude: [] }, pool: [], pag: 0 },
   PPG: 20,          // combinaciones por página
 };
 
@@ -4764,7 +4861,7 @@ function mel_goStep(id){
   document.getElementById(id).classList.add('mel-on');
 }
 
-function mel_genReset(){MEL_STATE.GS={zona:null,subzona:null,forma:null,paridad:null,pool:[],pag:0};mel_goStep('mel-gs-a');mel_renderA();}
+function mel_genReset(){MEL_STATE.GS={zona:null,subzona:null,forma:null,paridad:null,conds:{include:[],exclude:[]},pool:[],pag:0};mel_goStep('mel-gs-a');mel_renderA();}
 
 // ── Paso A: zona + subzona ──
 function mel_renderA(){
@@ -4896,13 +4993,17 @@ function mel_renderD(){
   const fp=sub.forma_paridad[MEL_STATE.GS.forma]||{};
   const pi=fp[MEL_STATE.GS.paridad]||{cnt_universo:0};
   const desc=GDAT.total_universo-pi.cnt_universo;
-  document.getElementById('mel-d-info').innerHTML=`<div class="mel-dbox" style="margin-bottom:1rem">
+  const dinfo=document.getElementById('mel-d-info');
+  dinfo.innerHTML=`<div class="mel-dbox" style="margin-bottom:1rem">
     Del universo de <strong>${mel_fmtM(GDAT.total_universo)}</strong> combinaciones posibles (C(56,6) = 32,468,436),<br>
     tus filtros eliminaron <strong>${mel_fmtM(desc)}</strong> combinaciones.<br>
     Quedan aproximadamente <strong>${mel_fmtM(pi.cnt_universo)}</strong> candidatas.<br>
     <strong style="color:#3B6D11">✓ Primer descarte obligatorio:</strong> excluimos todas las que ya salieron en el histórico. Lo que verás nunca ha salido.
-  </div>
-  <button class="mel-btn mel-btnp" onclick="mel_generarPool()">Generar combinaciones →</button>`;
+  </div>`;
+  dinfo.appendChild(buildCondsPanel(MEL_STATE.GS, 56, 'var(--mel)'));
+  const btn=mk('button'); btn.className='mel-btn mel-btnp'; btn.textContent='Generar combinaciones →';
+  btn.onclick=()=>mel_generarPool();
+  dinfo.appendChild(btn);
 }
 
 function mel__buildPool(){
@@ -4921,6 +5022,7 @@ function mel__buildPool(){
     const k=mel_ckey(c);
     if(d.historico_index[k])continue;
     if(seen.has(k))continue;
+    if(!applyConds(c, MEL_STATE.GS.conds))continue;
     seen.add(k);pool.push(c);
   }
   for(let i=pool.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[pool[i],pool[j]]=[pool[j],pool[i]];}
