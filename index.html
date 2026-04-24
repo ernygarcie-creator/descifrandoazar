@@ -649,7 +649,7 @@ function pickMod(mod){
   document.getElementById('intent-sub').textContent=MOD_HINTS[mod]||'';
   document.getElementById('ana-mod-title').textContent=MOD_NAMES[mod];
   setupAnaInput();
-  if(D.digitos>=3){
+  if(D.digitos>=3 || D.digitos===1){
     // Skip intent step - go directly to guia which shows gen/ana
     renderGuia(); goStep('st-guia');
   } else {
@@ -698,31 +698,51 @@ function addOptList(card,opts,cb){
 // GUIA 1 — Número inicial/final
 // ═══════════════════════════════════════════════════════
 function renderGuia1(el){
-  const card=mkCard('¿Cómo quieres seleccionar?');
-  addOptList(card,[
-    {k:'freq',t:'Más frecuentes',s:'Los dígitos que más veces han salido históricamente'},
-    {k:'ret', t:'Rezagados',     s:'Los que llevan más sorteos sin aparecer'},
-  ],(k)=>{clearOld(el,'#list-section');showList1(el,k);});
-  el.appendChild(card);
-}
-function showList1(el,crit){
-  clearOld(el,'#list-section');
-  const pd=D.par_data||{}, all=Object.keys(pd);
-  let pool=crit==='freq'
-    ?[...all].sort((a,b)=>(pd[b].veces_total||0)-(pd[a].veces_total||0))
-    :(D.top_retraso||[...all].sort((a,b)=>(pd[b].rezago_real||0)-(pd[a].rezago_real||0)));
-  const sec=mk('div');sec.id='list-section';
-  const res=mk('div','res-header');
-  res.innerHTML=`<div class="res-label">${crit==='freq'?'Más frecuentes':'Mayor retraso'}</div>`;
-  const row=mk('div','combo-list');
-  pool.forEach(p=>{
-    const d=pd[p], item=mk('div','combo-item');
-    item.innerHTML=`<div class="sph" style="background:var(--tris-l);border-color:var(--tris);color:var(--tris-d)">${p}</div>
-      <div class="combo-meta">Apariciones: <b>${fmt(d.veces_total)}</b> · Rezago: <b>${d.rezago_real===0?'HOY':d.rezago_real}</b></div>`;
-    item.onclick=()=>showDetail(p,1,()=>{clearOld(el,'#list-section');showList1(el,crit);});
-    row.appendChild(item);
-  });
-  res.appendChild(row); sec.appendChild(res); el.appendChild(sec);
+  const pd=D.par_data||{};
+  const all=Object.keys(pd);
+  let sortMode='freq';
+
+  function buildTable(){
+    clearOld(el,'#dig1-table');
+    const sorted=sortMode==='freq'
+      ?[...all].sort((a,b)=>(pd[b].veces_total||0)-(pd[a].veces_total||0))
+      :((D.top_retraso&&D.top_retraso.length>0)?[...D.top_retraso]:[...all].sort((a,b)=>(pd[b].rezago_real||0)-(pd[a].rezago_real||0)));
+
+    const wrap=mk('div'); wrap.id='dig1-table'; wrap.style.cssText='margin-top:.1rem';
+
+    // Sort toggle
+    const tog=mk('div'); tog.style.cssText='display:flex;gap:6px;margin-bottom:.65rem';
+    ['freq','ret'].forEach(m=>{
+      const btn=mk('button');
+      btn.textContent=m==='freq'?'Por apariciones':'Por rezago';
+      btn.style.cssText='padding:.27rem .65rem;border-radius:999px;font-size:.78rem;cursor:pointer;border:2px solid var(--tris);font-weight:600;transition:background .15s,color .15s;'+(sortMode===m?'background:var(--tris);color:#fff;':'background:transparent;color:var(--tris);');
+      btn.onclick=()=>{sortMode=m;buildTable();};
+      tog.appendChild(btn);
+    });
+    wrap.appendChild(tog);
+
+    // Header row
+    const hdr=mk('div');
+    hdr.style.cssText='display:grid;grid-template-columns:2.6rem 1fr 1fr;gap:.25rem;padding:.28rem .5rem;font-size:.72rem;color:var(--muted);border-bottom:2px solid var(--border);font-weight:700;text-align:center;';
+    hdr.innerHTML='<span>Dígito</span><span>Apariciones</span><span>Rezago</span>';
+    wrap.appendChild(hdr);
+
+    sorted.forEach(p=>{
+      const d2=pd[p]||{};
+      const row=mk('div');
+      row.style.cssText='display:grid;grid-template-columns:2.6rem 1fr 1fr;gap:.25rem;padding:.38rem .5rem;align-items:center;border-bottom:1px solid var(--border-light,#f0f0f0);text-align:center;';
+      const sphWrap=mk('div'); sphWrap.style.cssText='display:flex;justify-content:center';
+      const sph=mk('span','sph');
+      sph.style.cssText='background:var(--tris-l);border-color:var(--tris);color:var(--tris-d);width:1.75rem;height:1.75rem;font-size:.85rem;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;border:2px solid;font-weight:700;';
+      sph.textContent=p; sphWrap.appendChild(sph);
+      const ap=mk('div'); ap.style.cssText='font-size:.84rem;color:var(--fg)'; ap.textContent=fmt(d2.veces_total||0);
+      const rz=mk('div'); rz.style.cssText='font-size:.84rem;color:var(--tris-d);font-weight:700'; rz.textContent=(d2.rezago_real===0?'HOY':(d2.rezago_real||'—'));
+      row.appendChild(sphWrap); row.appendChild(ap); row.appendChild(rz);
+      wrap.appendChild(row);
+    });
+    el.appendChild(wrap);
+  }
+  buildTable();
 }
 
 // ═══════════════════════════════════════════════════════
@@ -758,17 +778,51 @@ function showList2(el,crit){
       ol.appendChild(o);
     });
     card.appendChild(ol); sec.appendChild(card);
-  } else {
-    let pool,label,hint;
-    if(crit==='ret'){
-      pool=(D.top_retraso||zona.sort((a,b)=>(pd[b].rezago_real||0)-(pd[a].rezago_real||0))).slice(0,30);
-      label='Más rezagadas'; hint='Las combinaciones de zona 5–13 que llevan más sorteos sin aparecer.';
-    } else {
-      pool=(D.top_rec100||zona.sort((a,b)=>(pd[b].ult100||0)-(pd[a].ult100||0))).slice(0,30);
-      label='Más frecuentes'; hint='Las más frecuentes en los últimos 100 sorteos.';
-    }
-    sec.appendChild(buildChipGrid(pool,label,hint,2,(p)=>showDetail(p,2,()=>{clearOld(el,'#list-section');showList2(el,crit);})));
+  } else if(crit==='freq'){
+    const pool=(D.top_rec100||zona.sort((a,b)=>(pd[b].ult100||0)-(pd[a].ult100||0))).slice(0,30);
+    sec.appendChild(buildChipGrid(pool,'Más frecuentes','Las más frecuentes en los últimos 100 sorteos.',2,(p)=>showDetail(p,2,()=>{clearOld(el,'#list-section');showList2(el,crit);})));
     const pickBtn=mk('button','gbtn'); pickBtn.style.cssText+='background:var(--tris-d);width:100%;padding:.5rem;margin-top:.55rem';
+    pickBtn.innerHTML='🎲 Elegir por mí';
+    pickBtn.onclick=()=>pickForMeChip(pool,sec,(p)=>showDetail(p,2,()=>{clearOld(el,'#list-section');showList2(el,crit);}),sec);
+    sec.appendChild(pickBtn);
+  } else {
+    // crit === 'ret' — ranked table using ALL par_data entries sorted by rezago
+    const allKeys=Object.keys(pd);
+    const pool=((D.top_retraso&&D.top_retraso.length>0)
+      ? [...D.top_retraso]
+      : allKeys.sort((a,b)=>(pd[b].rezago_real||0)-(pd[a].rezago_real||0))
+    ).slice(0,50);
+
+    const info=mk('div'); info.style.cssText='font-size:.79rem;color:var(--muted);margin:.2rem 0 .6rem;line-height:1.6';
+    info.innerHTML='Los <b>50 pares</b> que llevan más sorteos sin salir. Rezago no implica mayor probabilidad.'; sec.appendChild(info);
+
+    const hdr=mk('div');
+    hdr.style.cssText='display:grid;grid-template-columns:2rem 1fr auto auto auto;gap:.2rem .4rem;padding:.28rem .4rem;font-size:.72rem;color:var(--muted);border-bottom:2px solid var(--border);font-weight:700;';
+    hdr.innerHTML='<span>#</span><span>Par</span><span>Suma</span><span>Aparic.</span><span>Rezago</span>';
+    sec.appendChild(hdr);
+
+    pool.forEach((p,i)=>{
+      const d2=pd[p]||{}; const digs=String(p).split('');
+      const row=mk('div');
+      row.style.cssText='display:grid;grid-template-columns:2rem 1fr auto auto auto;gap:.2rem .4rem;padding:.38rem .4rem;align-items:center;border-bottom:1px solid var(--border-light,#f0f0f0);font-size:.82rem;cursor:pointer;';
+      row.onmouseenter=()=>row.style.background='var(--hover-bg,#f9f9f9)';
+      row.onmouseleave=()=>row.style.background='';
+      row.onclick=()=>showDetail(p,2,()=>{clearOld(el,'#list-section');showList2(el,crit);});
+      const rank=mk('span'); rank.style.cssText='color:var(--muted);font-size:.72rem;font-weight:600;'; rank.textContent=i+1;
+      const sphs=mk('div'); sphs.style.cssText='display:flex;gap:3px';
+      digs.forEach(dg=>{
+        const s=mk('span','sph');
+        s.style.cssText='background:var(--tris-l);border-color:var(--tris);color:var(--tris-d);width:1.55rem;height:1.55rem;font-size:.75rem;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;border:2px solid;font-weight:700;flex-shrink:0;';
+        s.textContent=dg; sphs.appendChild(s);
+      });
+      const sm=mk('span'); sm.style.cssText='color:var(--muted);text-align:right;font-size:.78rem'; sm.textContent=d2.suma??'—';
+      const ap=mk('span'); ap.style.cssText='color:var(--fg);text-align:right;'; ap.textContent=fmt(d2.veces_total||0);
+      const rz=mk('span'); rz.style.cssText='color:var(--tris-d);text-align:right;font-weight:700;'; rz.textContent=(d2.rezago_real===0?'HOY':(d2.rezago_real||'—'));
+      row.appendChild(rank); row.appendChild(sphs); row.appendChild(sm); row.appendChild(ap); row.appendChild(rz);
+      sec.appendChild(row);
+    });
+
+    const pickBtn=mk('button','gbtn'); pickBtn.style.cssText+='background:var(--tris-d);width:100%;padding:.5rem;margin-top:.6rem';
     pickBtn.innerHTML='🎲 Elegir por mí';
     pickBtn.onclick=()=>pickForMeChip(pool,sec,(p)=>showDetail(p,2,()=>{clearOld(el,'#list-section');showList2(el,crit);}),sec);
     sec.appendChild(pickBtn);
@@ -1023,11 +1077,39 @@ function showDir3Rezagadas(el){
   const back=mk('button','back-opt'); back.textContent='Atrás';
   back.onclick=()=>showDir3Gen(el); el.appendChild(back);
   const pd=D.par_data||{};
-  const pool=(D.top_retraso||Object.keys(pd).sort((a,b)=>(pd[b].rezago_real||0)-(pd[a].rezago_real||0))).slice(0,100);
+  // Fix: check .length so empty array doesn't short-circuit the fallback
+  const pool=((D.top_retraso&&D.top_retraso.length>0)
+    ? D.top_retraso
+    : Object.keys(pd).sort((a,b)=>(pd[b].rezago_real||0)-(pd[a].rezago_real||0))
+  ).slice(0,100);
+
   const info=mk('div'); info.style.cssText='font-size:.79rem;color:var(--muted);margin:.3rem 0 .65rem;line-height:1.6';
   info.innerHTML='Las <b>100 triples</b> con más sorteos sin salir. Rezago no implica mayor probabilidad.'; el.appendChild(info);
-  el.appendChild(buildChipGrid(pool,'','',3,(p)=>showDetail(p,3,()=>showDir3Rezagadas(el)),20));
-  const pickBtn=mk('button','gbtn'); pickBtn.style.cssText+='background:var(--tris-d);width:100%;padding:.5rem;margin-top:.5rem';
+
+  // Ranked table
+  const hdr=mk('div');
+  hdr.style.cssText='display:grid;grid-template-columns:2rem 1fr auto auto;gap:.25rem .5rem;padding:.28rem .4rem;font-size:.72rem;color:var(--muted);border-bottom:2px solid var(--border);font-weight:700;';
+  hdr.innerHTML='<span>#</span><span>Triple</span><span>Aparic.</span><span>Rezago</span>';
+  el.appendChild(hdr);
+
+  pool.forEach((p,i)=>{
+    const d2=pd[p]||{}; const digs=String(p).split('');
+    const row=mk('div');
+    row.style.cssText='display:grid;grid-template-columns:2rem 1fr auto auto;gap:.25rem .5rem;padding:.35rem .4rem;align-items:center;border-bottom:1px solid var(--border-light,#f0f0f0);font-size:.82rem;';
+    const rank=mk('span'); rank.style.cssText='color:var(--muted);font-size:.72rem;font-weight:600;'; rank.textContent=i+1;
+    const sphs=mk('div'); sphs.style.cssText='display:flex;gap:3px';
+    digs.forEach(dg=>{
+      const s=mk('span','sph');
+      s.style.cssText='background:var(--tris-l);border-color:var(--tris);color:var(--tris-d);width:1.55rem;height:1.55rem;font-size:.75rem;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;border:2px solid;font-weight:700;flex-shrink:0;';
+      s.textContent=dg; sphs.appendChild(s);
+    });
+    const ap=mk('span'); ap.style.cssText='color:var(--fg);text-align:right;'; ap.textContent=fmt(d2.veces_total||0);
+    const rz=mk('span'); rz.style.cssText='color:var(--tris-d);text-align:right;font-weight:700;'; rz.textContent=(d2.rezago_real===0?'HOY':(d2.rezago_real||'—'));
+    row.appendChild(rank); row.appendChild(sphs); row.appendChild(ap); row.appendChild(rz);
+    el.appendChild(row);
+  });
+
+  const pickBtn=mk('button','gbtn'); pickBtn.style.cssText+='background:var(--tris-d);width:100%;padding:.5rem;margin-top:.6rem';
   pickBtn.innerHTML='🎲 Elegir por mí';
   pickBtn.onclick=()=>pickForMeChip(pool,el,(p)=>showDetail(p,3,()=>showDir3Rezagadas(el)),el);
   el.appendChild(pickBtn);
@@ -3324,9 +3406,12 @@ function initChispazo(el, data) {
     CHIS_STATE.pool       = fullPool.slice(0, 200);
     CHIS_STATE.pag        = 0;
 
-    chis_$('chis-d-info').innerHTML += `<br><br><div class="chis-dbox" style="background:#EAF3DE;border-color:#C0DD97;color:#3B6D11">
+    // Use appendChild (not innerHTML +=) to preserve event listeners built by buildCondsPanel
+    const resultBox = document.createElement('div'); resultBox.style.marginTop = '.75rem';
+    resultBox.innerHTML = `<div class="chis-dbox" style="background:#EAF3DE;border-color:#C0DD97;color:#3B6D11">
       <strong>${fullPool.length.toLocaleString('es-MX')}</strong> combinaciones encontradas que cumplen tus criterios. ¡Ninguna ha salido jamás!
     </div>`;
+    chis_$('chis-d-info').appendChild(resultBox);
     const btn = chis_$('chis-d-info').querySelector('.chis-btn');
     if (btn) { btn.disabled = false; btn.textContent = 'Ver combinaciones →';
       btn.onclick = () => { chis_goStep('chis-gs-e'); chis_renderE(); }; }
@@ -4185,9 +4270,12 @@ function initMelateRetro(el, data) {
       [pool[i], pool[j]] = [pool[j], pool[i]];
     }
     MELR_STATE.pool = pool; MELR_STATE.pag = 0;
-    melr_$('melr-d-info').innerHTML += `<br><br><div class="melr-dbox" style="background:#EAF3DE;border-color:#C0DD97;color:#3B6D11">
+    // Use appendChild (not innerHTML +=) to preserve event listeners built by buildCondsPanel
+    const resultBox = document.createElement('div'); resultBox.style.marginTop = '.75rem';
+    resultBox.innerHTML = `<div class="melr-dbox" style="background:#EAF3DE;border-color:#C0DD97;color:#3B6D11">
       Generadas <strong>${pool.length}</strong> combinaciones que cumplen tus criterios. ¡Ninguna ha salido jamás!
     </div>`;
+    melr_$('melr-d-info').appendChild(resultBox);
     const btn = melr_$('melr-d-info').querySelector('.melr-btn');
     btn.textContent = 'Ver combinaciones →';
     btn.onclick = () => { melr_goStep('melr-gs-e'); melr_renderE(); };
@@ -5035,9 +5123,12 @@ function mel_generarPool(){
   const pool=MEL_STATE.GS.pool;
   const dinfo=document.getElementById('mel-d-info');
   if(dinfo){
-    dinfo.innerHTML+=`<br><br><div class="mel-dbox" style="background:#EAF3DE;border-color:#C0DD97;color:#3B6D11">
+    // Use appendChild (not innerHTML +=) to preserve event listeners built by buildCondsPanel
+    const resultBox=document.createElement('div'); resultBox.style.marginTop='.75rem';
+    resultBox.innerHTML=`<div class="mel-dbox" style="background:#EAF3DE;border-color:#C0DD97;color:#3B6D11">
       Generadas <strong>${pool.length}</strong> combinaciones. ¡Ninguna ha salido jamás!
     </div>`;
+    dinfo.appendChild(resultBox);
     const btnExist=dinfo.querySelector('.mel-btn');
     if(btnExist){btnExist.textContent='Ver combinaciones →';btnExist.onclick=()=>{mel_goStep('mel-gs-e');mel_renderE();};}
   } else {
